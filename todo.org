@@ -1,0 +1,6 @@
+* clfl
+* copy to new repository: clfl
+* rewrite slist-diff based on match
+* rewrite slist-join based on match
+* add slist-merge
+* update blog & post
