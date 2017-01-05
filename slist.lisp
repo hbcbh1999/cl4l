@@ -19,7 +19,7 @@
     lst))
 
 (defgeneric slist-cmp (x y)
-  ;; Generic method that specifies how to compare items,
+  ;; Specifies how to compare items,
   ;; returns result of comparison (-1, 0 or 1).
   (:method ((x character) y)
     (cond
