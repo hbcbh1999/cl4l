@@ -1,5 +1,5 @@
 (defpackage cl4l-memoize
-  (:export do-memoize memoize with-memoize
+  (:export clear-memoized do-memoize memoize with-memoize
            memoize-tests)
   (:import-from cl4l-macro-utils with-gsyms)
   (:use common-lisp))
@@ -11,9 +11,10 @@
   (make-hash-table :test #'equal))
 
 ;; Default context
-(defparameter *context* (make-context))
+(defvar *context* (make-context))
 
-(defmacro do-memoize ((args &key (context *context*)) &body body)
+(defmacro do-memoize ((args &key (context *context*))
+                      &body body)
   ;; Memoizes BODY for ARGS in CONTEXT
   (with-gsyms (_args _context _found _id _key)
     `(let* ((,_context ,context)
@@ -30,7 +31,7 @@
      ,@body))
 
 (defun memoize (fn &key (context *context*))
-  ;; Returns memoized wrapper for FN
+  ;; Returns memoized wrapper for FN in CONTEXT
   (lambda (&rest args)
     (do-memoize (args :context context)
       (apply fn args))))
