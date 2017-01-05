@@ -170,7 +170,7 @@
           (t
            (return (cons iit jit))))))))
 
-(defun slist-diff (self other)
+(defun slist-join (self other)
   ;; Removes all items from SELF that are found in OTHER,
   ;; from START; returns number of removed items.
   (do ((m nil) (pm nil m)) (nil)
@@ -178,14 +178,43 @@
     (when pm
       (do ((it (first (first m)))
            (pits (first pm)))
-          ((or (null pits) (eq it (first (rest pits)))) nil)
+          ((eq it (first (rest pits))) nil)
         (decf (sl-len self))
         (let ((pit (pop (rest pits))))
           (when (eq pit (sl-tail self))
             (setf (sl-tail self) (first (rest pits)))))))
     (unless m (return self))))
 
-(defun slist-join(self other &key (start (sl-head self)))
+(defun slist-diff (self other &key (start (sl-head self)))
+  ; Removes all items from SELF that are found in OTHER,
+  ; from START; returns number of removed items.
+  (if (or (null (rest start)) (zerop (sl-len other)))
+      0
+      (let ((ndel 0) (prev start))
+	(do ((iit (rest start)) 
+	     (jit (rest (sl-head other))))
+	    ((or (null iit) (null jit)) ndel)
+	  (let* ((ikey (slist-key self (first iit)))
+		 (jkey (slist-key self (first jit)))
+		 (cmp (slist-cmp ikey jkey)))
+	    (case cmp
+	      (-1 
+	       (setf prev 
+		     (slist-prev self jkey :start iit))
+	       (setf iit (rest prev)))
+	      (1 (setf jit 
+		       (rest (slist-prev other 
+					 ikey 
+					 :start jit))))
+	      (t (pop (rest prev))
+		 (decf (sl-len self))
+		 (incf ndel)
+		 (when (eq iit (sl-tail self))
+		   (setf (sl-tail self) prev))
+		 (setf iit (rest iit))
+		 (setf jit (rest jit)))))))))
+
+(defun slist-join-old (self other &key (start (sl-head self)))
   ; Removes all items from SELF that are not found in OTHER,
   ; from START; returns number of removed items.
   (if (or (null (rest start)) (zerop (sl-len other)))
@@ -238,7 +267,7 @@
 	 (y (slist nil 1 3 5 6 7))
 	 (xy (slist-clone x)))
     (slist-diff xy y)
-    (assert (= 3 (slist-len xy)))))
+    (assert (= 2 (slist-len xy)))))
 
 (defun slist-join-tests ()
   (let* ((x (slist nil 1 2 3 4 5))
