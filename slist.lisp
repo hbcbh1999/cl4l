@@ -1,6 +1,6 @@
 (defpackage cl4l-slist
   (:export make-slist slist slist-add slist-cmp slist-clone
-           slist-diff slist-find slist-join slist-key)
+           slist-diff slist-find slist-join slist-key slist-tests)
   (:use common-lisp))
 
 (in-package cl4l-slist)
@@ -32,7 +32,7 @@
 	((and (null xi) (null yi)) 0
 	 (null xi) -1
 	 (null yi) 1)
-      (let ((cmp (slist-cmp xi yi)))
+      (let ((cmp (slist-cmp (first xi) (first yi))))
 	(unless (zerop cmp)
 	  (return cmp)))))
 
@@ -52,8 +52,7 @@
       (let* ((xc (aref x i))
 	     (yc (aref y i))
 	     (cmp (slist-cmp xc yc)))
-	(unless (zerop cmp)
-	  (return cmp))))))
+	(unless (zerop cmp) (return cmp))))))
 
 (defun slist (key &rest its)
   ;; Returns a new slist with KEY, initialized from ITS
@@ -128,7 +127,7 @@
 
 (defun slist-add (self it &key (start (sl-head self)))
   ;; Adds IT to SELF after START and returns IT
-  (let* ((prev (slist-prev self it :start start))
+  (let* ((prev (slist-prev self (slist-key self it) :start start))
 	 (its (push it (rest prev))))
     (when (eq prev (sl-tail self))
       (setf (sl-tail self) its))
@@ -217,7 +216,7 @@
 
 ;;; Tests
 
-(defun slist-match-tests ()
+(defun match-tests ()
   (let* ((x (slist nil 1 2 3 4 5))
          (y (slist nil 3 5 6))
          (m1 (slist-match x y))
@@ -227,14 +226,14 @@
     (assert (= 5 (first (first m2))))
     (assert (null m3))))
 
-(defun slist-diff-tests ()
+(defun diff-tests ()
   (let* ((x (slist nil 1 2 3 4 5))
 	 (y (slist nil 1 3 5 6 7))
 	 (xy (slist-clone x)))
     (slist-diff xy y)
     (assert (= 2 (slist-len xy)))))
 
-(defun slist-join-tests ()
+(defun join-tests ()
   (let* ((x (slist nil 1 2 3 4 5))
 	 (y (slist nil 1 3 5 6 7))
 	 (xy (slist-clone x)))
@@ -269,7 +268,7 @@
      (time
       (dotimes (_ num-reps) ,@body))))
 
-(defun slist-perf-tests ()
+(defun perf-tests ()
   (let ((x (rnd-list)) (y (rnd-list)))
     (do-bench
       (let ((join (copy-list x))
@@ -292,7 +291,7 @@
 			(slist-len diffyx)))))))))
 
 (defun slist-tests ()
-  (slist-match-tests)
-  (slist-diff-tests)
-  (slist-join-tests)
-  (slist-perf-tests))
+  (match-tests)
+  (diff-tests)
+  (join-tests)
+  (perf-tests))

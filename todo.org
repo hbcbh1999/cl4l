@@ -1,10 +1,8 @@
 * cl4l
-* add defmoize macro
-* add context tests
-* add memoize tests
 * add field
-** struct with name get (optional set (default setf)
+** struct with name get (optional set)
 ** define-field
+** field-val + setf
 * add index
 ** take list of fields for key & unique
 ** use slist for recs
