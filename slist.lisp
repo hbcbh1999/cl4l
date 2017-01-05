@@ -1,6 +1,6 @@
 (defpackage cl4l-slist
-  (:export make-slist slist slist-cmp slist-clone slist-diff
-           slist-join slist-key)
+  (:export make-slist slist slist-add slist-cmp slist-clone
+           slist-diff slist-find slist-join slist-key)
   (:use common-lisp))
 
 (in-package cl4l-slist)
@@ -127,16 +127,16 @@
     (when found? pos)))
 
 (defun slist-add (self it &key (start (sl-head self)))
-  ;; Adds IT to SELF after START
+  ;; Adds IT to SELF after START and returns IT
   (let* ((prev (slist-prev self it :start start))
 	 (its (push it (rest prev))))
     (when (eq prev (sl-tail self))
       (setf (sl-tail self) its))
     (incf (sl-len self))
-    its))
+    it))
 
 (defun slist-rem (self key &key (start (sl-head self)))
-  ;; Removes KEY from SELF after START
+  ;; Removes KEY from SELF after START and returns item
   (multiple-value-bind (prev found?) 
       (slist-prev self key :start start)
     (when found?
@@ -214,42 +214,6 @@
                  (setf (sl-tail self) prev))
                (setf iit (rest iit))
                (setf jit (rest jit)))))))))
-
-(defun slist-join-old (self other &key (start (sl-head self)))
-  ;; Removes all items from SELF that are not found in OTHER,
-  ;; from START; returns number of removed items.
-  (if (or (null (rest start)) (zerop (sl-len other)))
-      0
-      (let ((ndel 0) (prev start))
-	(do ((iit (rest start)) 
-	     (jit (rest (sl-head other))))
-	    ((or (null iit) (null jit)) ndel)
-	  (let* ((ikey (slist-key self (first iit)))
-		 (jkey (slist-key self (first jit)))
-		 (cmp (slist-cmp ikey jkey)))
-	    (case cmp
-	      (-1 (setf iit 
-			(rest (slist-prev self 
-					  jkey 
-					  :start iit))))
-	      (1 (setf jit 
-		       (rest (slist-prev other 
-					 ikey 
-					 :start jit))))
-	      (t (do ()
-		     ((eq (rest prev) iit))
-		   (pop (rest prev))
-		   (decf (sl-len self))
-		   (incf ndel))
-               (setf prev iit)
-               (setf iit (rest iit))
-               (setf jit (rest jit))))))
-	(setf (sl-tail self) prev)
-	(do ()
-	    ((null (rest prev)) ndel)
-	  (pop (rest prev))
-	  (decf (sl-len self))
-	  (incf ndel)))))
 
 ;;; Tests
 
