@@ -1,5 +1,11 @@
 * clfl
-* rewrite slist-diff based on match
+* add field
+** struct with name get (optional set (default setf)
+** define-field
+* add index
+** take list of fields for key & unique
+** use slist for recs
+*** set key
 * rewrite slist-join based on match
 * add slist-merge
 * update blog & post
