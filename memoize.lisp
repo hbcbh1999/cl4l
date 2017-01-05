@@ -1,6 +1,7 @@
 (defpackage cl4l-memoize
   (:export do-memoize memoize with-memoize
            memoize-tests)
+  (:import-from cl4l-macro-utils with-gsyms)
   (:use common-lisp))
 
 (in-package cl4l-memoize)
@@ -9,15 +10,12 @@
   ;; Returns new context
   (make-hash-table :test #'equal))
 
+;; Default context
 (defparameter *context* (make-context))
 
 (defmacro do-memoize ((args &key (context *context*)) &body body)
   ;; Memoizes BODY for ARGS in CONTEXT
-  (let ((_args (gensym))
-        (_context (gensym))
-        (_found (gensym))
-        (_id (gensym))
-        (_key (gensym)))
+  (with-gsyms (_args _context _found _id _key)
     `(let* ((,_context ,context)
             (,_args ,args)
             (,_key (cons ',_id ,_args))
