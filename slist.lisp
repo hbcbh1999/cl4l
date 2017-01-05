@@ -12,7 +12,7 @@
   (tail nil :type list))
 
 (defun make-slist (&rest args)
-  ;; Returns a new slist with fields set to ARGS
+  ;; Returns a new slist from ARGS
   (let ((lst (apply #'make-sl args)))
     (unless (sl-tail lst)
       (setf (sl-tail lst) (last (sl-head lst))))

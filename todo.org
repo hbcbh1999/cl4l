@@ -6,9 +6,6 @@
 ** take list of fields for key & unique
 ** use slist for recs
 *** set key
-* add context.lisp
-** thread local
-** add do-context & with-context macros
 * add memoize.lisp
 ** google defmemoized
 ** add memoize(fn)
