@@ -1,63 +1,47 @@
 (defpackage cl4l-memoize
-  (:export define-memoized do-memoize memoize memoize-tests
-           with-memoize)
+  (:export do-memoize memoize with-memoize
+           memoize-tests)
   (:use common-lisp))
 
 (in-package cl4l-memoize)
 
-(defstruct (mz)
-  fn key res)
-
-(defmacro define-memoized (sym)
-  `(progn
-     (let ((fn (symbol-function ',sym)))
-       (fmakunbound ',sym)
-       (setf (symbol-function ',sym) (memoize fn)))))
-
-(defmacro do-memoize ((context) &body body)
-  ;; Executes BODY in CONTEXT
-  `(let ((*context* ,context))
-     ,@body))
-
-(defmacro with-memoize (&body body)
-  ;; Executes BODY in context from ARGS
-  `(do-context (make-context)
-     ,@body))
-
 (defun make-context ()
+  ;; Returns new context
   (make-hash-table :test #'equal))
 
 (defparameter *context* (make-context))
 
+(defmacro do-memoize ((args &key (context *context*)) &body body)
+  ;; Memoizes BODY for ARGS in CONTEXT
+  (let ((_args (gensym))
+        (_context (gensym))
+        (_found (gensym))
+        (_id (gensym))
+        (_key (gensym)))
+    `(let* ((,_context ,context)
+            (,_args ,args)
+            (,_key (cons ',_id ,_args))
+            (,_found (gethash ,_key ,_context)))
+       (or ,_found
+           (setf (gethash ,_key ,_context)
+                 (progn ,@body))))))
+
+(defmacro with-memoize (&body body)
+  ;; Executes BODY in new context
+  `(do-context (make-context)
+     ,@body))
+
 (defun memoize (fn &key (context *context*))
   ;; Returns memoized wrapper for FN
-  (let ((id (gensym)))
-    (lambda (&rest args)
-      (let* ((key (cons id args))
-             (found (gethash key context))
-             (mz (or found
-                     (setf (gethash key context)
-                           (make-mz :fn fn
-                                    :res (apply fn args))))))
-        (mz-res mz)))))
+  (lambda (&rest args)
+    (do-memoize (args :context context)
+      (apply fn args))))
 
-(let ((x 0))
-  (defun test-fn (y)
-    (incf x y)))
+;; Tests
 
-(define-memoized test-fn)
-
-(defun basic-tests ()
+(defun memoize-tests ()
   (let* ((x 0)
          (fn (memoize (lambda (y) (incf x y)))))
     (assert (= 42 (funcall fn 42)))
     (assert (= 42 (funcall fn 42)))
     (assert (= 42 x))))
-
-(defun define-tests ()
-  (assert (= 42 (funcall #'test-fn 42)))
-  (assert (= 42 (funcall #'test-fn 42))))
-
-(defun memoize-tests ()
-  (basic-tests)
-  (define-tests))

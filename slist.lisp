@@ -1,6 +1,7 @@
 (defpackage cl4l-slist
   (:export make-slist slist slist-add slist-cmp slist-clone
-           slist-diff slist-find slist-join slist-key slist-tests)
+           slist-diff slist-find slist-join slist-key
+           slist-tests)
   (:use common-lisp))
 
 (in-package cl4l-slist)
