@@ -35,8 +35,8 @@
     (do-memoize (args)
       (apply fn args))))
 
-(defun memoize-clear ()
-  (clrhash *context*))
+(defun memoize-clear (&optional (context *context*))
+  (clrhash context))
 
 ;; Tests
 
