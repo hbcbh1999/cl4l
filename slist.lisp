@@ -1,8 +1,8 @@
 (defpackage cl4l-slist
   (:export make-slist
            slist slist-add slist-cmp slist-clone
-           slist-diff slist-find slist-join slist-key
-           slist-len slist-prev slist-rem
+           slist-diff slist-find slist-first slist-join slist-key
+           slist-last slist-len slist-prev slist-rem
            slist-tests)
   (:use common-lisp))
 
@@ -77,13 +77,13 @@
   (let ((key (sl-key self)))
     (if key (funcall key it) it)))
 
-(defun slist-first (self)
-  ;; Returns the first item from SELF
-  (second (sl-head self)))
+(defun slist-first (self &key key)
+  ;; Returns all items in self, optionally from KEY
+  (rest (if key (slist-prev self key) (sl-head self))))
 
 (defun slist-last (self)
   ;; Returns the last item from SELF
-  (first (sl-tail self)))
+  (sl-tail self))
 
 (defun slist-len (self)
   ;; Returns the length of SELF
@@ -112,7 +112,7 @@
 		     (values its (zerop cmp) pos)))))))))
 
 (defun slist-find (self key &key (start (sl-head self)))
-  ;; Returns the item matching KEY in SELF, from START;
+  ;; Returns item with KEY in SELF, from START;
   ;; or NIL if not found.
   (multiple-value-bind (prev found?) 
       (slist-prev self key :start start)
