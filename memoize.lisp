@@ -15,12 +15,12 @@
 ;; Default context
 (defvar *context* (make-memoize))
 
-(defmacro do-memoize ((key) &body body)
+(defmacro do-memoize ((cnd key) &body body)
   ;; Memoizes BODY for ARGS
   (with-gsyms (_found _id _key)
     `(let* ((,_key (list ',_id ,key))
             (,_found (gethash ,_key *context*)))
-       (or ,_found
+       (or (and ,cnd ,_found)
            (setf (gethash ,_key *context*)
                  (progn ,@body))))))
 
@@ -32,10 +32,11 @@
 (defun memoize (fn)
   ;; Returns memoized wrapper for FN
   (lambda (&rest args)
-    (do-memoize (args)
+    (do-memoize (t args)
       (apply fn args))))
 
 (defun memoize-clear (&optional (context *context*))
+  ;; Clears CONTEXT
   (clrhash context))
 
 ;; Tests
@@ -53,7 +54,7 @@
     (do-bench (num-warmups num-reps) (fib fib-max)))
   
   (labels ((fib (n)
-             (do-memoize (n)
+             (do-memoize ((> n 10) n)
                (case n
                  (0 0)
                  (1 1)
