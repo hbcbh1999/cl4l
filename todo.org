@@ -1,4 +1,6 @@
 * cl4l
+* move index-commit / index-rollback out to root
+** export
 * add support for index removals in trans
 * add support for index updates
 ** use trans
