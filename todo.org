@@ -1,6 +1,11 @@
 * cl4l
-* move index-commit / index-rollback out to root
-** export
 * add support for index removals in trans
+** add tr-rem
+*** populate from index-rem
+*** remove from tr-add at the same time
+** change index-add to also remove from tr-rem
+* write trans update test
+** add support for searching trans in index-add
+** add with prev values in test trans before changing rec
 * rewrite slist-diff based on match
 * add slist-merge
