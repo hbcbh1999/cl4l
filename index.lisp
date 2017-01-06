@@ -47,9 +47,6 @@
                                 (trans *trans*))
   (let ((found (index-find self key)))
     (when trans
-      (unless found
-        (let ((add (gethash (cons self rec) (tr-add trans))))
-          (when add (index-rem self add :trans trans))))
       (setf (gethash (cons self rec) (tr-add trans)) key)
       (let ((rem (gethash (cons self rec) (tr-rem trans))))
         (when (equal rem key)
@@ -142,6 +139,5 @@
 (defun index-tests ()
   (basic-tests)
   (str-tests)
-  (trans-tests)
-  (update-tests))
+  (trans-tests))
 
