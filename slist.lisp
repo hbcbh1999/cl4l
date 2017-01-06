@@ -1,16 +1,18 @@
 (defpackage cl4l-slist
-  (:export make-slist slist slist-add slist-cmp slist-clone
+  (:export make-slist
+           slist slist-add slist-cmp slist-clone
            slist-diff slist-find slist-join slist-key
+           slist-len slist-prev
            slist-tests)
   (:use common-lisp))
 
 (in-package cl4l-slist)
 
 (defstruct (slist (:conc-name sl-) (:constructor make-sl)) 
-  (head nil :type list) 
-  key 
-  (len 0 :type integer) 
-  (tail nil :type list))
+  (head nil) 
+  (key nil) 
+  (len 0) 
+  (tail nil))
 
 (defun make-slist (&rest args)
   ;; Returns a new slist from ARGS
@@ -30,9 +32,7 @@
 
   (:method ((x list) y)
     (do ((xi x (rest xi)) (yi y (rest yi)))
-	((and (null xi) (null yi)) 0
-	 (null xi) -1
-	 (null yi) 1)
+	((and (null xi) (null yi)) 0)
       (let ((cmp (slist-cmp (first xi) (first yi))))
 	(unless (zerop cmp)
 	  (return cmp)))))
@@ -57,10 +57,10 @@
 
 (defun slist (key &rest its)
   ;; Returns a new slist with KEY, initialized from ITS
-  (let ((sits (stable-sort its 
-			   (lambda (x y) 
-			     (= (slist-cmp x y) -1)) 
-			   :key key)))
+  (let ((sits (and its (stable-sort its 
+                                    (lambda (x y) 
+                                      (= (slist-cmp x y) -1)) 
+                                    :key key))))
     (make-slist :head (cons nil sits) 
 		:len (length sits)
 		:key key)))
@@ -116,7 +116,7 @@
   ;; or NIL if not found.
   (multiple-value-bind (prev found?) 
       (slist-prev self key :start start)
-    (when found? (rest prev))))
+    (when found? (first (rest prev)))))
 
 (defun slist-pos (self key &key (start (sl-head self)))
   ;; Returns the position of KEY in SELF, from START;
@@ -295,4 +295,5 @@
   (match-tests)
   (diff-tests)
   (join-tests)
-  (perf-tests))
+  ;(perf-tests)
+  )

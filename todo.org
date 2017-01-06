@@ -1,12 +1,5 @@
 * cl4l
-* add field
-** struct with name get (optional set)
-** define-field
-** field-val + setf
-* add index
-** take list of fields for key & unique
-** use slist for recs
-*** set key
+* add define-field
 * rewrite slist-join based on match
 * add slist-merge
 * update blog & post

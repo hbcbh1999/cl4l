@@ -1,5 +1,6 @@
 (defpackage cl4l-memoize
-  (:export clear-memoized do-memoize memoize with-memoize
+  (:export make-context
+           do-memoize memoize with-memoize
            memoize-tests)
   (:import-from cl4l-macro-utils with-gsyms)
   (:use common-lisp))
