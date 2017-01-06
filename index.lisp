@@ -25,7 +25,7 @@
   (recs nil)
   (uniq? nil))
 
-(defstruct (trans (:conc-name tr-) (:constructor make-tr))
+(defstruct (tr)
   (add (make-hash-table :test #'eq))
   (rem (make-hash-table :test #'eq)))
 
@@ -42,9 +42,9 @@
 (defun index-find (self key)
   (slist-find (idx-recs self) key))
 
-(defun index-add (self rec &key (trans *trans*))
-  (let* ((key (index-key self rec))
-         (found (index-find self key)))
+(defun index-add (self rec &key (key (index-key self rec))
+                                (trans *trans*))
+  (let ((found (index-find self key)))
     (when (and rec trans)
       (setf (gethash (cons self rec) (tr-add trans)) key)
       (let ((found (gethash (cons self rec) (tr-add trans))))
@@ -62,11 +62,17 @@
       (setf (gethash (cons self rec) (tr-rem trans)) key)
       (let ((found (gethash (cons self rec) (tr-add trans))))
         (when (equal found key)
-          (remhash (cons self rec) (tr-add trans)))))))
+          (remhash (cons self rec) (tr-add trans)))))
+    rec))
 
 (defun index-rollback (&key (trans *trans*))
   (do-hash-table ((tr-add trans) k v)
-    (index-rem (first k) v :trans nil)))
+    (index-rem (first k) v :trans nil))
+  (clrhash (tr-add trans))
+
+  (do-hash-table ((tr-rem trans) k v)
+    (index-add (first k) (rest k) :key v :trans nil))
+  (clrhash (tr-rem trans)))
 
 (defun index-len (self)
   (slist-len (idx-recs self)))
@@ -90,10 +96,17 @@
 (defun rollback-tests ()
   (let ((idx (make-index :keys (list #'rec-foo) :uniq? t)))
     (do-index
-      (let ((rec (index-add idx (make-rec :foo 1 :baz "ab"))))
+      (let* ((rec (index-add idx (make-rec :foo 1 :baz "ab")))
+             (key (index-key idx rec)))
         (index-rollback)
         (assert (= 0 (index-len idx)))
-        (assert (null (index-find idx (index-key idx rec))))))))
+        (assert (null (index-find idx key)))
+        (assert (index-add idx rec))
+        (index-commit)
+        (assert (eq rec (index-find idx key)))
+        (assert (eq rec (index-rem idx key)))
+        (index-rollback)
+        (assert (eq rec (index-find idx key)))))))
 
 (defun index-tests ()
   (basic-tests)

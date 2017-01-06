@@ -1,5 +1,4 @@
 * cl4l
-* add support for index removals in trans rollback
 * write trans update test
 ** add support for searching trans in index-add
 ** add with prev values in test trans before changing rec
