@@ -1,6 +1,4 @@
 * cl4l
-* rename slist-cmp to compare and move to utils
-** keep slist imp in slist.lisp
 * rewrite slist-diff based on match
 * add slist-merge
 * add index-match/diff/join/merge

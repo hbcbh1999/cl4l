@@ -1,10 +1,10 @@
 (defpackage cl4l-slist
   (:export make-slist
-           slist slist-add slist-cmp slist-clone
+           slist slist-add slist-clone
            slist-diff slist-find slist-first slist-join slist-key
            slist-last slist-len slist-prev slist-rem
            slist-tests)
-  (:import-from cl4l-utils do-bench)
+  (:import-from cl4l-utils compare do-bench)
   (:use common-lisp))
 
 (in-package cl4l-slist)
@@ -22,45 +22,12 @@
       (setf (sl-tail lst) (last (sl-head lst))))
     lst))
 
-(defgeneric slist-cmp (x y)
-  ;; Specifies how to compare items,
-  ;; returns result of comparison (-1, 0 or 1).
-  (:method ((x character) y)
-    (cond
-      ((char< x y) -1)
-      ((char> x y) 1)
-      (t 0)))
-
-  (:method ((x list) y)
-    (do ((xi x (rest xi)) (yi y (rest yi)))
-	((and (null xi) (null yi)) 0)
-      (let ((cmp (slist-cmp (first xi) (first yi))))
-	(unless (zerop cmp)
-	  (return cmp)))))
-
-  (:method ((x number) y)
-    (cond
-      ((< x y) -1)
-      ((> x y) 1)
-      (t 0)))
-
-  (:method ((x slist) y)
-    (slist-cmp (rest (sl-head x)) (rest (sl-head y))))
-
-  (:method ((x string) y)
-    (do ((i 0 (1+ i)))
-	((= i (min (length x) (length y)))
-	 (slist-cmp (length x) (length y)))
-      (let* ((xc (aref x i))
-	     (yc (aref y i))
-	     (cmp (slist-cmp xc yc)))
-	(unless (zerop cmp) (return cmp))))))
 
 (defun slist (key &rest its)
   ;; Returns a new slist with KEY, initialized from ITS
   (let ((sits (and its (stable-sort its 
                                     (lambda (x y) 
-                                      (= (slist-cmp x y) -1)) 
+                                      (= (compare x y) -1)) 
                                     :key key))))
     (make-slist :head (cons nil sits) 
 		:len (length sits)
@@ -96,18 +63,17 @@
   (if (null (rest start))
       (values start nil 0)
       (let* ((lit (sl-tail self))
-	     (lit-cmp (slist-cmp key 
-				 (slist-key self 
-					    (first lit)))))
+	     (lit-cmp (compare key 
+                               (slist-key self (first lit)))))
 	(if  (> lit-cmp 0)
 	     (values lit (zerop lit-cmp) (sl-len self))
 	     (do ((its start (rest its))
 		  (pos 0 (1+ pos)))
 		 ((null (rest its)) 
 		  (values (sl-tail self) nil pos))
-	       (let ((cmp (slist-cmp key 
-				     (slist-key 
-				      self (second its)))))
+	       (let ((cmp (compare key 
+                                   (slist-key 
+                                    self (second its)))))
 		 (when (< cmp 1)
 		   (return 
 		     (values its (zerop cmp) pos)))))))))
@@ -159,7 +125,7 @@
         ((or (null iit) (null jit)) nil)
       (let* ((ikey (slist-key self (first iit)))
              (jkey (slist-key self (first jit)))
-             (cmp (slist-cmp ikey jkey)))
+             (cmp (compare ikey jkey)))
         (case cmp
           (-1 
            (setf prev-iit 
@@ -198,7 +164,7 @@
 	    ((or (null iit) (null jit)) ndel)
 	  (let* ((ikey (slist-key self (first iit)))
 		 (jkey (slist-key self (first jit)))
-		 (cmp (slist-cmp ikey jkey)))
+		 (cmp (compare ikey jkey)))
 	    (case cmp
 	      (-1 
 	       (setf prev 
@@ -215,6 +181,9 @@
                  (setf (sl-tail self) prev))
                (setf iit (rest iit))
                (setf jit (rest jit)))))))))
+
+(defmethod compare ((x slist) y)
+  (compare (slist-first x) (slist-first y)))
 
 ;;; Tests
 
