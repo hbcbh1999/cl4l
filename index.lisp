@@ -10,7 +10,7 @@
 
 (in-package cl4l-index)
 
-;; Default transaction
+;; Default trans
 (defvar *trans* nil)
 
 (defmacro do-index (&body body)
