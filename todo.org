@@ -1,6 +1,3 @@
 * cl4l
-* add define-field
-* rewrite slist-join based on match
-* add slist-merge
-* update blog & post
 * rewrite slist-diff based on match
+* add slist-merge
