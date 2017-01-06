@@ -46,16 +46,20 @@
 (defun index-add (self rec &key (key (index-key self rec))
                                 (trans *trans*))
   (let ((found (index-find self key)))
-    (when (and rec trans)
+    (when trans
+      (unless found
+        (let ((add (gethash (cons self rec) (tr-add trans))))
+          (when add (index-rem self add :trans trans))))
       (setf (gethash (cons self rec) (tr-add trans)) key)
-      (let ((found (gethash (cons self rec) (tr-add trans))))
-        (when (equal found key)
+      (let ((rem (gethash (cons self rec) (tr-rem trans))))
+        (when (equal rem key)
           (remhash (cons self rec) (tr-rem trans)))))
     (unless (and found (idx-uniq? self))
       (slist-add (idx-recs self) rec))))
 
 (defun index-commit (&key (trans *trans*))
-  (clrhash (tr-add trans)))
+  (clrhash (tr-add trans))
+  (clrhash (tr-rem trans)))
 
 (defun index-first (self &key key)
   (slist-first (idx-recs self) :key key))
@@ -103,15 +107,15 @@
 (defun str-tests ()
   (let* ((idx (make-index (list #'length #'identity)
                           :uniq? t))
-         (str1 (index-add idx "ab"))
-         (str2 (index-add idx "cd"))
-         (str3 (index-add idx "z"))
+         (rec1 (index-add idx "ab"))
+         (rec2 (index-add idx "cd"))
+         (rec3 (index-add idx "z"))
          (recs (index-first idx)))
-    (assert (string= str3 (pop recs)))
-    (assert (string= str1 (pop recs)))
-    (assert (string= str2 (pop recs)))))
+    (assert (string= rec3 (pop recs)))
+    (assert (string= rec1 (pop recs)))
+    (assert (string= rec2 (pop recs)))))
 
-(defun rollback-tests ()
+(defun trans-tests ()
   (let ((idx (make-index (list #'rec-foo) :uniq? t)))
     (do-index
       (let* ((rec (index-add idx (make-rec :foo 1 :baz "ab")))
@@ -126,8 +130,18 @@
         (index-rollback)
         (assert (eq rec (index-find idx key)))))))
 
+(defun update-tests ()
+  (let* ((idx (make-index (list #'first) :uniq? t))
+         (rec (index-add idx '(41))))
+    (do-index
+      (index-add idx rec)
+      (incf (first rec))
+      (index-add idx rec))
+    (assert (= 1 (index-len idx)))))
+
 (defun index-tests ()
   (basic-tests)
   (str-tests)
-  (rollback-tests))
+  (trans-tests)
+  (update-tests))
 

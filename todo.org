@@ -1,7 +1,4 @@
 * cl4l
-* write trans update test
-** add support for searching trans in index-add
-** add with prev values in test trans before changing rec
 * add fib test to memoize
 ** use do-macro to memoize individual values
 ** compare perf to lambda memoizing entire fn
