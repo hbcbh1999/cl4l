@@ -26,7 +26,8 @@
   (uniq? nil))
 
 (defstruct (trans (:conc-name tr-) (:constructor make-tr))
-  (add (make-hash-table :test #'eq)))
+  (add (make-hash-table :test #'eq))
+  (rem (make-hash-table :test #'eq)))
 
 (defun index-key (self rec)
   (mapcar (lambda (fn) (funcall fn rec)) (idx-keys self)))
@@ -41,23 +42,31 @@
 (defun index-find (self key)
   (slist-find (idx-recs self) key))
 
-(defun index-add (self rec)
+(defun index-add (self rec &key (trans *trans*))
   (let* ((key (index-key self rec))
          (found (index-find self key)))
-    (when *trans*
-      (setf (gethash rec (tr-add *trans*)) (cons self key)))
+    (when (and rec trans)
+      (setf (gethash (cons self rec) (tr-add trans)) key)
+      (let ((found (gethash (cons self rec) (tr-add trans))))
+        (when (equal found key)
+          (remhash (cons self rec) (tr-rem trans)))))
     (unless (and found (idx-uniq? self))
       (slist-add (idx-recs self) rec))))
 
-(defun index-commit ()
-  (clrhash (tr-add *trans*)))
+(defun index-commit (&key (trans *trans*))
+  (clrhash (tr-add trans)))
 
-(defun index-rem (self key)
-  (slist-rem (idx-recs self) key))
+(defun index-rem (self key &key (trans *trans*))
+  (let ((rec (slist-rem (idx-recs self) key)))
+    (when (and rec trans)
+      (setf (gethash (cons self rec) (tr-rem trans)) key)
+      (let ((found (gethash (cons self rec) (tr-add trans))))
+        (when (equal found key)
+          (remhash (cons self rec) (tr-add trans)))))))
 
-(defun index-rollback ()
-  (do-hash-table ((tr-add *trans*) _ v)
-    (index-rem (first v) (rest v))))
+(defun index-rollback (&key (trans *trans*))
+  (do-hash-table ((tr-add trans) k v)
+    (index-rem (first k) v :trans nil)))
 
 (defun index-len (self)
   (slist-len (idx-recs self)))
