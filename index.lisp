@@ -4,7 +4,8 @@
            index-rollback
            index-tests)
   (:import-from cl4l-macro-utils with-gsyms)
-  (:use cl4l-field cl4l-slist common-lisp))
+  (:import-from cl4l-utils do-hash-table)
+  (:use cl4l-slist common-lisp))
 
 (in-package cl4l-index)
 
@@ -19,13 +20,16 @@
        (index-rollback))))
 
 (defstruct (index (:conc-name idx-) (:constructor make-idx)) 
-  (flds nil)
+  (keys nil)
   (name (gensym))
   (recs nil)
   (uniq? nil))
 
+(defstruct (trans (:conc-name tr-) (:constructor make-tr))
+  (add (make-hash-table :test #'eq)))
+
 (defun index-key (self rec)
-  (mapcar (lambda (f) (field-val f rec)) (idx-flds self)))
+  (mapcar (lambda (fn) (funcall fn rec)) (idx-keys self)))
 
 (defun make-index (&rest args)
   (let ((idx (apply #'make-idx args)))
@@ -52,7 +56,7 @@
   (slist-rem (idx-recs self) key))
 
 (defun index-rollback ()
-  (do-hash-values ((tr-add *trans*) v)
+  (do-hash-table ((tr-add *trans*) _ v)
     (index-rem (first v) (rest v))))
 
 (defun index-len (self)
@@ -62,9 +66,8 @@
   foo bar baz)
 
 (defun basic-tests ()
-  (let* ((foo (make-field :get #'rec-foo))
-         (bar (make-field :get #'rec-bar))
-         (idx (make-index :flds (list foo bar) :uniq? t))
+  (let* ((idx (make-index :keys (list #'rec-foo #'rec-bar)
+                          :uniq? t))
          (rec1 (index-add idx (make-rec :foo 1 :bar 2 :baz "ab")))
          (rec2 (index-add idx (make-rec :foo 2 :bar 3 :baz "bc")))
          (rec3 (index-add idx (make-rec :foo 3 :bar 4 :baz "cd"))))
@@ -75,16 +78,10 @@
     (assert (eq rec2 (index-find idx (index-key idx rec2))))
     (assert (eq rec3 (index-find idx (index-key idx rec3))))))
 
-(defstruct (trans (:conc-name tr-) (:constructor make-tr))
-  (add (make-hash-table :test #'eq)))
-
 (defun rollback-tests ()
-  (let* ((foo (make-field :get #'rec-foo))
-         (bar (make-field :get #'rec-bar))
-         (idx (make-index :flds (list foo bar) :uniq? t)))
+  (let ((idx (make-index :keys (list #'rec-foo) :uniq? t)))
     (do-index
-      (let ((rec (index-add idx
-                            (make-rec :foo 1 :bar 2 :baz "ab"))))
+      (let ((rec (index-add idx (make-rec :foo 1 :baz "ab"))))
         (index-rollback)
         (assert (= 0 (index-len idx)))
         (assert (null (index-find idx (index-key idx rec))))))))
@@ -92,3 +89,4 @@
 (defun index-tests ()
   (basic-tests)
   (rollback-tests))
+
