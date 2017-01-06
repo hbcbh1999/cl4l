@@ -2,7 +2,5 @@
 * move index-commit / index-rollback out to root
 ** export
 * add support for index removals in trans
-* add support for index updates
-** use trans
 * rewrite slist-diff based on match
 * add slist-merge
