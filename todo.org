@@ -9,3 +9,4 @@
 ** add with prev values in test trans before changing rec
 * rewrite slist-diff based on match
 * add slist-merge
+* add index-match/diff/join/merge
