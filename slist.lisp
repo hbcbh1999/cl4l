@@ -4,6 +4,7 @@
            slist-diff slist-find slist-first slist-join slist-key
            slist-last slist-len slist-prev slist-rem
            slist-tests)
+  (:import-from cl4l-utils do-bench)
   (:use common-lisp))
 
 (in-package cl4l-slist)
@@ -263,15 +264,9 @@
 (defun rnd-slist (lst)
   (apply #'slist nil lst))
 
-(defmacro do-bench (&body body)
-  `(progn
-     (dotimes (_ num-warmups) ,@body)
-     (time
-      (dotimes (_ num-reps) ,@body))))
-
 (defun perf-tests ()
   (let ((x (rnd-list)) (y (rnd-list)))
-    (do-bench
+    (do-bench (num-warmups num-reps)
       (let ((join (copy-list x))
 	    (diffxy (copy-list x))
 	    (diffyx (copy-list y)))
@@ -279,7 +274,7 @@
 	(setf diffxy (nset-difference diffxy y :test #'=))
 	(setf diffyx (nset-difference diffyx x :test #'=))))
     (let ((xs (rnd-slist x)) (ys (rnd-slist y)))
-      (do-bench
+      (do-bench (num-warmups num-reps)
 	(let ((join (slist-clone xs)) 
 	      (diffxy (slist-clone xs))
 	      (diffyx (slist-clone ys)))
