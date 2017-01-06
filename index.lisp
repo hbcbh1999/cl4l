@@ -1,6 +1,7 @@
 (defpackage cl4l-index
   (:export make-index
-           index-add index-find index-key index-len
+           index-add index-commit index-find index-key index-len
+           index-rollback
            index-tests)
   (:import-from cl4l-macro-utils with-gsyms)
   (:use cl4l-field cl4l-slist common-lisp))
@@ -10,23 +11,21 @@
 (defvar *trans* nil)
 
 (defmacro do-index (&body body)
-  `(flet ((index-commit ()
-            (clrhash (tr-add *trans*)))
-          (index-rollback ()
-            (do-hash-values ((tr-add *trans*) v)
-              (index-rem (first v) (rest v)))))
-     (let ((*trans* (make-tr)))
-       (unwind-protect
-            (progn
-              ,@body
-              (index-commit))
-         (index-rollback)))))
+  `(let ((*trans* (make-tr)))
+     (unwind-protect
+          (progn
+            ,@body
+            (index-commit))
+       (index-rollback))))
 
 (defstruct (index (:conc-name idx-) (:constructor make-idx)) 
   (flds nil)
   (name (gensym))
   (recs nil)
   (uniq? nil))
+
+(defun index-key (self rec)
+  (mapcar (lambda (f) (field-val f rec)) (idx-flds self)))
 
 (defun make-index (&rest args)
   (let ((idx (apply #'make-idx args)))
@@ -46,11 +45,15 @@
     (unless (and found (idx-uniq? self))
       (slist-add (idx-recs self) rec))))
 
+(defun index-commit ()
+  (clrhash (tr-add *trans*)))
+
 (defun index-rem (self key)
   (slist-rem (idx-recs self) key))
 
-(defun index-key (self rec)
-  (mapcar (lambda (f) (field-val f rec)) (idx-flds self)))
+(defun index-rollback ()
+  (do-hash-values ((tr-add *trans*) v)
+    (index-rem (first v) (rest v))))
 
 (defun index-len (self)
   (slist-len (idx-recs self)))
@@ -81,7 +84,7 @@
          (idx (make-index :flds (list foo bar) :uniq? t)))
     (do-index
       (let ((rec (index-add idx
-                             (make-rec :foo 1 :bar 2 :baz "ab"))))
+                            (make-rec :foo 1 :bar 2 :baz "ab"))))
         (index-rollback)
         (assert (= 0 (index-len idx)))
         (assert (null (index-find idx (index-key idx rec))))))))
