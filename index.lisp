@@ -10,15 +10,18 @@
 
 (in-package cl4l-index)
 
+;; Default transaction
 (defvar *trans* nil)
 
 (defmacro do-index (&body body)
-  `(let ((*trans* (make-tr)))
-     (unwind-protect
-          (progn
-            ,@body
-            (index-commit))
-       (index-rollback))))
+  (with-gsyms (_res)
+    `(let ((*trans* (make-tr)))
+       (unwind-protect
+            (progn
+              (let ((,_res (progn ,@body)))
+                (index-commit)
+                ,_res))
+         (index-rollback)))))
 
 (defstruct (index (:conc-name idx-) (:constructor make-idx)) 
   (keys nil)
