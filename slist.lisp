@@ -2,7 +2,7 @@
   (:export make-slist
            slist slist-add slist-cmp slist-clone
            slist-diff slist-find slist-join slist-key
-           slist-len slist-prev
+           slist-len slist-prev slist-rem
            slist-tests)
   (:use common-lisp))
 

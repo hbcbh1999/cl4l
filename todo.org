@@ -1,3 +1,6 @@
 * cl4l
+* add support for index removals in trans
+* add support for index updates
+** use trans
 * rewrite slist-diff based on match
 * add slist-merge
