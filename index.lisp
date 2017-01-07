@@ -1,6 +1,7 @@
 (defpackage cl4l-index
   (:export make-index
-           index-add index-commit index-diff index-find index-first
+           index-add index-clone index-commit index-del index-diff
+           index-find index-first
            index-join index-key index-last index-len
            index-rollback
            index-tests)
@@ -37,9 +38,10 @@
 
 (defun make-index (keys &rest args)
   (let ((idx (apply #'make-idx :keys keys args)))
-    (setf (idx-recs idx)
-          (slist (lambda (rec)
-                   (index-key idx rec))))
+    (unless (idx-recs idx)
+            (setf (idx-recs idx)
+                  (slist (lambda (rec)
+                           (index-key idx rec)))))
     idx))
 
 (defun index-find (self key)
@@ -53,8 +55,22 @@
     (unless (and found (idx-uniq? self))
       (slist-add (idx-recs self) rec))))
 
+(defun index-clone (self &rest args)
+  (let ((clone
+          (apply #'make-index (idx-keys self)
+                 :uniq? (idx-uniq? self)
+                 :recs (slist-clone (idx-recs self))
+                 args)))
+    (setf (slist-key (idx-recs clone))
+          (lambda (rec)
+            (index-key clone rec)))
+    clone))
+
 (defun index-commit (&key (trans *trans*))
   (clrhash trans))
+
+(defun index-del (self prev)
+  (slist-del (idx-recs self) prev))
 
 (defun index-diff (self other)
   (slist-diff (idx-recs self) (idx-recs other)))
@@ -100,6 +116,15 @@
     (assert (eq rec2 (index-find idx (index-key idx rec2))))
     (assert (eq rec3 (index-find idx (index-key idx rec3))))))
 
+(defun clone-tests ()
+  (let ((idx (make-index (list #'identity) :uniq? t)))
+    (dotimes (i 10) (index-add idx i))
+    (let ((clone (index-clone idx)))
+      (dotimes (i 10) (assert (index-rem clone
+                                         (index-key clone i))))
+      (assert (zerop (index-len clone))))
+    (assert (= 10 (index-len idx)))))
+
 (defun str-tests ()
   (let* ((idx (make-index (list #'length #'identity)
                           :uniq? t))
@@ -137,5 +162,6 @@
 
 (defun index-tests ()
   (basic-tests)
+  (clone-tests)
   (str-tests)
   (trans-tests))

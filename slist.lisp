@@ -1,6 +1,6 @@
 (defpackage cl4l-slist
   (:export make-slist
-           slist slist-add slist-clone
+           slist slist-add slist-clone slist-del
            slist-diff slist-find slist-first slist-join slist-key
            slist-last slist-len slist-prev slist-rem
            slist-tests)
@@ -43,6 +43,9 @@
   ;; Returns the key for IT in SELF
   (let ((key (sl-key self)))
     (if key (funcall key it) it)))
+
+(defun (setf slist-key) (key self)
+  (setf (sl-key self) key))
 
 (defun slist-first (self &key key)
   ;; Returns all items in self, optionally from KEY
@@ -101,17 +104,20 @@
     (incf (sl-len self))
     it))
 
+(defun slist-del (self prev)
+  ;; Deletes item after PREV from SELF returns it
+  (when (eq (rest prev) (sl-tail self))
+    (setf (sl-tail self) prev))
+  (let ((it (second prev)))
+    (pop (rest prev))
+    (decf (sl-len self))
+    it))
+
 (defun slist-rem (self key &key (start (sl-head self)))
   ;; Removes KEY from SELF after START and returns item
   (multiple-value-bind (prev found?) 
       (slist-prev self key :start start)
-    (when found?
-      (when (eq (rest prev) (sl-tail self))
-	(setf (sl-tail self) prev))
-      (let ((it (second prev)))
-	(pop (rest prev))
-	(decf (sl-len self))
-	it))))
+    (when found? (slist-del self prev))))
 
 (defun slist-match (self other
                     &optional prev-match)
@@ -146,10 +152,7 @@
       (do ((it (second (first m)))
            (pits (rest (first pm))))
           ((eq it (second pits)) nil)
-        (decf (sl-len self))
-        (let ((pit (pop (rest pits))))
-          (when (eq pit (first (sl-tail self)))
-            (setf (sl-tail self) pits)))))
+        (slist-del self pits)))
     (unless m (return self))))
 
 (defun slist-diff (self other)
@@ -157,12 +160,7 @@
   ;; returns SELF.
   (do ((m nil) (pm nil m)) (nil)
     (setf m (slist-match self other m))
-    (when m
-      (decf (sl-len self))
-      (let* ((its (first m))
-             (it (pop (rest its))))
-        (when (eq it (first (sl-tail self)))
-          (setf (sl-tail self) its))))
+    (when m (slist-del self (first m)))
     (unless m (return self))))
 
 (defmethod compare ((x slist) y)
