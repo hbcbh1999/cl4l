@@ -35,7 +35,10 @@
       (let* ((xc (aref x i))
 	     (yc (aref y i))
 	     (cmp (compare xc yc)))
-	(unless (zerop cmp) (return cmp))))))
+	(unless (zerop cmp) (return cmp)))))
+
+  (:method ((x symbol) y)
+    (compare (symbol-name x) (symbol-name y))))
 
 (defmacro do-bench ((num-warmups num-reps) &body body)
   `(progn

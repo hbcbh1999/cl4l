@@ -1,3 +1,6 @@
+* finish test
+** suppress print out from time
+** print table with test tags & time
 * add slist-merge
 * add index-match/merge
 * document index

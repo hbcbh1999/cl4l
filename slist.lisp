@@ -2,7 +2,7 @@
   (:export make-slist
            slist slist-add slist-clone slist-del
            slist-diff slist-find slist-first slist-join slist-key
-           slist-last slist-len slist-prev slist-rem
+           slist-last slist-len slist-match slist-prev slist-rem
            slist-tests)
   (:import-from cl4l-utils compare do-bench)
   (:use cl))
