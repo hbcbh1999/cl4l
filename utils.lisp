@@ -1,5 +1,5 @@
 (defpackage cl4l-utils
-  (:export compare do-bench do-hash-table)
+  (:export compare do-bench do-hash-table let-when)
   (:import-from cl4l-macro-utils with-gsyms)
   (:use common-lisp))
 
@@ -37,7 +37,6 @@
 	     (cmp (compare xc yc)))
 	(unless (zerop cmp) (return cmp))))))
 
-
 (defmacro do-bench ((num-warmups num-reps) &body body)
   `(progn
      (dotimes (_ ,num-warmups) ,@body)
@@ -55,3 +54,8 @@
             ,@body)
           (go start)
         end))))
+
+(defmacro let-when ((var expr cnd) &body body)
+  `(let ((,var ,expr))
+     (when ,cnd ,@body)
+     ,var))

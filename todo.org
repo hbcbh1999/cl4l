@@ -1,6 +1,4 @@
 * cl4l
-* add let-when macro
-** grep let/when
 * add asd file
 ** quicklisp setup
 * add slist-merge
