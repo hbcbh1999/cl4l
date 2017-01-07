@@ -1,5 +1,12 @@
 * cl4l
+* replace index trans struct with hash-table
+** store nil key for removals
+* add let-when macro
+** grep let/when
+* add asd file
+** quicklisp setup
 * add slist-merge
 * add index-match/merge
+* add license & readme
 * optimize index usage of slist
 ** use prev instead of find and forward to add / rem
