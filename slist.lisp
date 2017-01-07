@@ -5,7 +5,7 @@
            slist-last slist-len slist-prev slist-rem
            slist-tests)
   (:import-from cl4l-utils compare do-bench)
-  (:use common-lisp))
+  (:use cl))
 
 (in-package cl4l-slist)
 

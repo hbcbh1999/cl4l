@@ -6,7 +6,7 @@
            index-tests)
   (:import-from cl4l-macro-utils with-gsyms)
   (:import-from cl4l-utils do-hash-table)
-  (:use cl4l-slist common-lisp))
+  (:use cl cl4l-slist))
 
 (in-package cl4l-index)
 

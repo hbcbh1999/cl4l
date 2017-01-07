@@ -1,6 +1,6 @@
 (defpackage cl4l-macro-utils
   (:export with-syms)
-  (:use common-lisp))
+  (:use cl))
 
 (in-package cl4l-macro-utils)
 

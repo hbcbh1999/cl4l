@@ -4,7 +4,7 @@
            memoize-tests)
   (:import-from cl4l-macro-utils with-gsyms)
   (:import-from cl4l-utils do-bench)
-  (:use common-lisp))
+  (:use cl))
 
 (in-package cl4l-memoize)
 

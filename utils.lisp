@@ -1,7 +1,7 @@
 (defpackage cl4l-utils
   (:export compare do-bench do-hash-table let-when)
   (:import-from cl4l-macro-utils with-gsyms)
-  (:use common-lisp))
+  (:use cl))
 
 (in-package cl4l-utils)
 
