@@ -194,8 +194,8 @@
     (assert (= 3 (slist-len xy)))))
 
 (defparameter max-len 10000)
-(defparameter num-warmups 3)
-(defparameter num-reps 10)
+(defparameter num-warmups 10)
+(defparameter num-reps 3)
 
 (defun rnd-list ()
   (let ((lst) (len 0))
