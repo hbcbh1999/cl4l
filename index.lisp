@@ -1,5 +1,5 @@
 (defpackage cl4l-index
-  (:export make-index
+  (:export make-index make-trans
            index-add index-clone index-commit index-del index-diff
            index-find index-first
            index-join index-key index-last index-len
