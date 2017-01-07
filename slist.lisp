@@ -122,7 +122,8 @@
 
 (defun slist-match (self other
                     &optional prev-match)
-  ;; Returns next matching items from (SELF . OTHER)
+  ;; Returns next matching items from (SELF . OTHER),
+  ;; optionally starting from PREV-MATCH
   (unless prev-match
     (setf prev-match (cons (sl-head self) (sl-head other))))
   (let* ((start (first prev-match)) (prev-iit start))
@@ -146,7 +147,7 @@
 
 (defun slist-join (self other)
   ;; Removes all items from SELF that are not found in OTHER and
-  ;; returns self.
+  ;; returns SELF.
   (do ((m nil) (pm nil m)) (nil)
     (setf m (slist-match self other m))
     (when pm
