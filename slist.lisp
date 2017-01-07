@@ -45,6 +45,7 @@
     (if key (funcall key it) it)))
 
 (defun (setf slist-key) (key self)
+  ;; Sets KEY in SELF
   (setf (sl-key self) key))
 
 (defun slist-first (self &key key)
@@ -241,4 +242,4 @@
   (diff-tests)
   (join-tests)
   ;(perf-tests)
-  )
+)
