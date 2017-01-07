@@ -1,6 +1,4 @@
 * cl4l
-* replace index trans struct with hash-table
-** store nil key for removals
 * add let-when macro
 ** grep let/when
 * add asd file

@@ -15,7 +15,7 @@
 
 (defmacro do-index (&body body)
   (with-gsyms (_res)
-    `(let ((*trans* (make-tr)))
+    `(let ((*trans* (make-trans)))
        (unwind-protect
             (progn
               (let ((,_res (progn ,@body)))
@@ -29,9 +29,8 @@
   (recs nil)
   (uniq? nil))
 
-(defstruct (tr)
-  (add (make-hash-table :test #'eq))
-  (rem (make-hash-table :test #'eq)))
+(defun make-trans ()
+  (make-hash-table :test #'eq))
 
 (defun index-key (self rec)
   (mapcar (lambda (fn) (funcall fn rec)) (idx-keys self)))
@@ -50,16 +49,12 @@
                                 (trans *trans*))
   (let ((found (index-find self key)))
     (when trans
-      (setf (gethash (cons self rec) (tr-add trans)) key)
-      (let ((rem (gethash (cons self rec) (tr-rem trans))))
-        (when (equal rem key)
-          (remhash (cons self rec) (tr-rem trans)))))
+      (setf (gethash (cons self rec) trans) key))
     (unless (and found (idx-uniq? self))
       (slist-add (idx-recs self) rec))))
 
 (defun index-commit (&key (trans *trans*))
-  (clrhash (tr-add trans))
-  (clrhash (tr-rem trans)))
+  (clrhash trans))
 
 (defun index-diff (self other)
   (slist-diff (idx-recs self) (idx-recs other)))
@@ -76,20 +71,15 @@
 (defun index-rem (self key &key (trans *trans*))
   (let ((rec (slist-rem (idx-recs self) key)))
     (when (and rec trans)
-      (setf (gethash (cons self rec) (tr-rem trans)) key)
-      (let ((found (gethash (cons self rec) (tr-add trans))))
-        (when (equal found key)
-          (remhash (cons self rec) (tr-add trans)))))
+      (setf (gethash (cons self rec) trans) t))
     rec))
 
 (defun index-rollback (&key (trans *trans*))
-  (do-hash-table ((tr-add trans) k v)
-    (index-rem (first k) v :trans nil))
-  (clrhash (tr-add trans))
-
-  (do-hash-table ((tr-rem trans) k v)
-    (index-add (first k) (rest k) :key v :trans nil))
-  (clrhash (tr-rem trans)))
+  (do-hash-table (trans k v)
+    (if (eq v t)
+        (index-add (first k) (rest k) :trans nil)
+        (index-rem (first k) v :trans nil)))
+  (clrhash trans))
 
 (defun index-len (self)
   (slist-len (idx-recs self)))
