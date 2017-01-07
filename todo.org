@@ -1,4 +1,3 @@
 * cl4l
-* rewrite slist-diff based on match
 * add slist-merge
-* add index-match/diff/join/merge
+* add index-match/merge

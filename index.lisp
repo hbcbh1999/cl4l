@@ -1,7 +1,7 @@
 (defpackage cl4l-index
   (:export make-index
-           index-add index-commit index-find index-first
-           index-key index-last index-len
+           index-add index-commit index-diff index-find index-first
+           index-join index-key index-last index-len
            index-rollback
            index-tests)
   (:import-from cl4l-macro-utils with-gsyms)
@@ -61,8 +61,14 @@
   (clrhash (tr-add trans))
   (clrhash (tr-rem trans)))
 
+(defun index-diff (self other)
+  (slist-diff (idx-recs self) (idx-recs other)))
+
 (defun index-first (self &key key)
   (slist-first (idx-recs self) :key key))
+
+(defun index-join (self other)
+  (slist-join (idx-recs self) (idx-recs other)))
 
 (defun index-last (self)
   (slist-last (idx-recs self)))

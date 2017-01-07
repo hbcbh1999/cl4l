@@ -22,7 +22,6 @@
       (setf (sl-tail lst) (last (sl-head lst))))
     lst))
 
-
 (defun slist (key &rest its)
   ;; Returns a new slist with KEY, initialized from ITS
   (let ((sits (and its (stable-sort its 
@@ -117,8 +116,8 @@
 (defun slist-match (self other
                     &optional prev-match)
   ;; Returns next matching items from (SELF . OTHER)
-  (unless prev-match (setf prev-match (cons (sl-head self)
-                                            (sl-head other))))
+  (unless prev-match
+    (setf prev-match (cons (sl-head self) (sl-head other))))
   (let* ((start (first prev-match)) (prev-iit start))
     (do ((iit (rest start)) 
          (jit (rest (rest prev-match))))
@@ -136,51 +135,35 @@
                                      ikey 
                                      :start jit))))
           (t
-           (return (cons iit jit))))))))
+           (return (cons prev-iit jit))))))))
 
 (defun slist-join (self other)
-  ;; Removes all items from SELF that are found in OTHER,
-  ;; from START; returns number of removed items.
+  ;; Removes all items from SELF that are not found in OTHER and
+  ;; returns self.
   (do ((m nil) (pm nil m)) (nil)
     (setf m (slist-match self other m))
     (when pm
-      (do ((it (first (first m)))
-           (pits (first pm)))
-          ((eq it (first (rest pits))) nil)
+      (do ((it (second (first m)))
+           (pits (rest (first pm))))
+          ((eq it (second pits)) nil)
         (decf (sl-len self))
         (let ((pit (pop (rest pits))))
-          (when (eq pit (sl-tail self))
-            (setf (sl-tail self) (first (rest pits)))))))
+          (when (eq pit (first (sl-tail self)))
+            (setf (sl-tail self) pits)))))
     (unless m (return self))))
 
-(defun slist-diff (self other &key (start (sl-head self)))
-  ;; Removes all items from SELF that are found in OTHER,
-  ;; from START; returns number of removed items.
-  (if (or (null (rest start)) (zerop (sl-len other)))
-      0
-      (let ((ndel 0) (prev start))
-	(do ((iit (rest start)) 
-	     (jit (rest (sl-head other))))
-	    ((or (null iit) (null jit)) ndel)
-	  (let* ((ikey (slist-key self (first iit)))
-		 (jkey (slist-key self (first jit)))
-		 (cmp (compare ikey jkey)))
-	    (case cmp
-	      (-1 
-	       (setf prev 
-		     (slist-prev self jkey :start iit))
-	       (setf iit (rest prev)))
-	      (1 (setf jit 
-		       (rest (slist-prev other 
-					 ikey 
-					 :start jit))))
-	      (t (pop (rest prev))
-               (decf (sl-len self))
-               (incf ndel)
-               (when (eq iit (sl-tail self))
-                 (setf (sl-tail self) prev))
-               (setf iit (rest iit))
-               (setf jit (rest jit)))))))))
+(defun slist-diff (self other)
+  ;; Removes all items from SELF that are found in OTHER and
+  ;; returns SELF.
+  (do ((m nil) (pm nil m)) (nil)
+    (setf m (slist-match self other m))
+    (when m
+      (decf (sl-len self))
+      (let* ((its (first m))
+             (it (pop (rest its))))
+        (when (eq it (first (sl-tail self)))
+          (setf (sl-tail self) its))))
+    (unless m (return self))))
 
 (defmethod compare ((x slist) y)
   (compare (slist-first x) (slist-first y)))
@@ -193,8 +176,8 @@
          (m1 (slist-match x y))
          (m2 (slist-match x y m1))
          (m3 (slist-match x y m2)))
-    (assert (= 3 (first (first m1))))
-    (assert (= 5 (first (first m2))))
+    (assert (= 3 (second (first m1))))
+    (assert (= 5 (second (first m2))))
     (assert (null m3))))
 
 (defun diff-tests ()
@@ -205,7 +188,7 @@
     (assert (= 2 (slist-len xy)))))
 
 (defun join-tests ()
-  (let* ((x (slist nil 1 2 3 4 5))
+  (let* ((x (slist nil 1 2 3 4 5 8))
 	 (y (slist nil 1 3 5 6 7))
 	 (xy (slist-clone x)))
     (slist-join xy y)
