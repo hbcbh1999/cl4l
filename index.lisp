@@ -56,15 +56,10 @@
       (slist-add (idx-recs self) rec))))
 
 (defun index-clone (self &rest args)
-  (let ((clone
-          (apply #'make-index (idx-keys self)
-                 :uniq? (idx-uniq? self)
-                 :recs (slist-clone (idx-recs self))
-                 args)))
-    (setf (slist-key (idx-recs clone))
-          (lambda (rec)
-            (index-key clone rec)))
-    clone))
+  (apply #'make-index (idx-keys self)
+         :uniq? (idx-uniq? self)
+         :recs (slist-clone (idx-recs self))
+         args))
 
 (defun index-commit (&key (trans *trans*))
   (clrhash trans))
