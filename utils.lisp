@@ -40,11 +40,11 @@
   (:method ((x symbol) y)
     (compare (symbol-name x) (symbol-name y))))
 
-(defmacro do-bench ((num-warmups num-reps) &body body)
+(defmacro do-bench ((nprep nreal) &body body)
   `(progn
-     (dotimes (_ ,num-warmups) ,@body)
+     (dotimes (_ ,nprep) ,@body)
      (time
-      (dotimes (_ ,num-reps) ,@body))))
+      (dotimes (_ ,nreal) ,@body))))
 
 (defmacro do-hash-table ((tbl key val) &body body)
   (with-gsyms (_found _iter)

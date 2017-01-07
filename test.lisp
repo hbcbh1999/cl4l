@@ -15,14 +15,14 @@
   (push (cons (apply #'slist nil tags) fn)
         *suite*))
 
-(defun run-tests (nwarm nreal &optional run-tags skip-tags)
+(defun run-tests (nprep nreal &optional run-tags skip-tags)
   (dolist (tst *suite*)
     (let ((test-tags (first tst)))
       (when (and (or (null run-tags)
                      (slist-match test-tags run-tags))
                  (or (null skip-tags)
                      (not (slist-match test-tags skip-tags))))
-        (do-bench (nwarm nreal)
+        (do-bench (nprep nreal)
           (funcall (rest tst)))))))
 
 (define-test (foo bar)
