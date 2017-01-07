@@ -1,3 +1,5 @@
 * cl4l
 * add slist-merge
 * add index-match/merge
+* optimize index usage of slist
+** use prev instead of find and forward to add / rem
