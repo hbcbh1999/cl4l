@@ -1,8 +1,6 @@
 * cl4l
-* add asd file
-** quicklisp setup
 * add slist-merge
 * add index-match/merge
-* add license & readme
+* add readme
 * optimize index usage of slist
 ** use prev instead of find and forward to add / rem
