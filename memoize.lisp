@@ -1,9 +1,8 @@
 (defpackage cl4l-memoize
   (:export make-memoize
-           do-memoize memoize memoize-clear with-memoize
-           memoize-tests)
+           do-memoize memoize memoize-clear with-memoize)
   (:import-from cl4l-macro-utils with-gsyms)
-  (:import-from cl4l-utils do-bench)
+  (:import-from cl4l-test define-test)
   (:use cl))
 
 (in-package cl4l-memoize)
@@ -42,33 +41,29 @@
 ;; Tests
 
 (defparameter fib-max 25)
-(defparameter num-warmups 10)
-(defparameter num-reps 100)
 
-(defun fib-tests ()
+(define-test (:memoize :fib :perf :naive)
   (labels ((fib (n)
              (case n
                (0 0)
                (1 1)
                (t (+ (fib (1- n)) (fib (- n 2)))))))
-    (do-bench (num-warmups num-reps) (fib fib-max)))
-  
+    (fib fib-max)))
+
+(define-test (:memoize :fib :perf)
+  (memoize-clear)
   (labels ((fib (n)
              (do-memoize ((> n 10) n)
                (case n
                  (0 0)
                  (1 1)
                  (t (+ (fib (1- n)) (fib (- n 2))))))))
-    (do-bench (num-warmups num-reps) (fib fib-max))))
+    (fib fib-max)))
 
-(defun fn-tests ()
+(define-test (:memoize :fn) ()
+  (memoize-clear)
   (let* ((x 0)
          (fn (memoize (lambda (y) (incf x y)))))
     (assert (= 42 (funcall fn 42)))
     (assert (= 42 (funcall fn 42)))
     (assert (= 42 x))))
-
-(defun memoize-tests ()
-  (memoize-clear)
-  (fib-tests)
-  (fn-tests))

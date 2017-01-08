@@ -1,5 +1,5 @@
 (defpackage cl4l-utils
-  (:export compare do-bench do-hash-table let-when)
+  (:export compare do-hash-table let-when)
   (:import-from cl4l-macro-utils with-gsyms)
   (:use cl))
 
@@ -39,12 +39,6 @@
 
   (:method ((x symbol) y)
     (compare (symbol-name x) (symbol-name y))))
-
-(defmacro do-bench ((nprep nreal) &body body)
-  `(progn
-     (dotimes (_ ,nprep) ,@body)
-     (time
-      (dotimes (_ ,nreal) ,@body))))
 
 (defmacro do-hash-table ((tbl key val) &body body)
   (with-gsyms (_found _iter)

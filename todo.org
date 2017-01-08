@@ -1,6 +1,5 @@
 * finish test
-** suppress print out from time
-** print table with test tags & time
+** change tags to use keywords
 * add slist-merge
 * add index-match/merge
 * document index

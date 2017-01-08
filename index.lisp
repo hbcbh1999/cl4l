@@ -1,10 +1,10 @@
 (defpackage cl4l-index
-  (:export make-index make-trans
-           index-add index-clone index-commit index-del index-diff
+  (:export index-add index-clone index-commit index-del index-diff
            index-find index-first
            index-join index-key index-last index-len
-           index-rollback
-           index-tests)
+           index-rem index-rollback
+           make-index make-trans
+           with-index)
   (:import-from cl4l-macro-utils with-gsyms)
   (:import-from cl4l-utils do-hash-table)
   (:use cl cl4l-slist))
@@ -14,7 +14,7 @@
 ;; Default trans
 (defvar *trans* nil)
 
-(defmacro do-index (&body body)
+(defmacro with-index (&body body)
   (with-gsyms (_res)
     `(let ((*trans* (make-trans)))
        (unwind-protect
@@ -94,69 +94,3 @@
 
 (defun index-len (self)
   (slist-len (idx-recs self)))
-
-(defstruct (rec)
-  foo bar baz)
-
-(defun basic-tests ()
-  (let* ((idx (make-index (list #'rec-foo #'rec-bar)
-                          :uniq? t))
-         (rec1 (index-add idx (make-rec :foo 1 :bar 2 :baz "ab")))
-         (rec2 (index-add idx (make-rec :foo 2 :bar 3 :baz "bc")))
-         (rec3 (index-add idx (make-rec :foo 3 :bar 4 :baz "cd"))))
-    (assert (and rec1 rec2 rec3))
-    (assert (null (index-add idx rec1)))
-    (assert (= 3 (index-len idx)))
-    (assert (eq rec1 (index-find idx (index-key idx rec1))))
-    (assert (eq rec2 (index-find idx (index-key idx rec2))))
-    (assert (eq rec3 (index-find idx (index-key idx rec3))))))
-
-(defun clone-tests ()
-  (let ((idx (make-index (list #'identity) :uniq? t)))
-    (dotimes (i 10) (index-add idx i))
-    (let ((clone (index-clone idx)))
-      (dotimes (i 10) (assert (index-rem clone
-                                         (index-key clone i))))
-      (assert (zerop (index-len clone))))
-    (assert (= 10 (index-len idx)))))
-
-(defun str-tests ()
-  (let* ((idx (make-index (list #'length #'identity)
-                          :uniq? t))
-         (rec1 (index-add idx "ab"))
-         (rec2 (index-add idx "cd"))
-         (rec3 (index-add idx "z"))
-         (recs (index-first idx)))
-    (assert (string= rec3 (pop recs)))
-    (assert (string= rec1 (pop recs)))
-    (assert (string= rec2 (pop recs)))))
-
-(defun trans-tests ()
-  (let ((idx (make-index (list #'rec-foo) :uniq? t)))
-    (do-index
-      (let* ((rec (index-add idx (make-rec :foo 1 :baz "ab")))
-             (key (index-key idx rec)))
-        (index-rollback)
-        (assert (= 0 (index-len idx)))
-        (assert (null (index-find idx key)))
-        (assert (index-add idx rec))
-        (index-commit)
-        (assert (eq rec (index-find idx key)))
-        (assert (eq rec (index-rem idx key)))
-        (index-rollback)
-        (assert (eq rec (index-find idx key)))))))
-
-(defun update-tests ()
-  (let* ((idx (make-index (list #'first) :uniq? t))
-         (rec (index-add idx '(41))))
-    (do-index
-      (index-add idx rec)
-      (incf (first rec))
-      (index-add idx rec))
-    (assert (= 1 (index-len idx)))))
-
-(defun index-tests ()
-  (basic-tests)
-  (clone-tests)
-  (str-tests)
-  (trans-tests))
