@@ -6,3 +6,8 @@
 * add readme
 * optimize index usage of slist
 ** use prev instead of find and forward to add / rem
+
+(assert (= (+ (slist-len xs) (slist-len ys))
+               (+ (* 2 (slist-len join))
+                  (slist-len diffxy)
+                  (slist-len diffyx))))

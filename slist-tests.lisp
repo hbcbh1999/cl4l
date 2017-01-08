@@ -28,7 +28,7 @@
     (slist-join xy y)
     (assert (= 3 (slist-len xy)))))
 
-(defparameter len 100000)
+(defparameter len 1000)
 
 (defun rnd-list ()
   (let ((lst))
@@ -42,7 +42,8 @@
 (defparameter ys nil)
 
 (defmethod run-tests :around (run &key)
-  (let* ((x (rnd-list) y (rnd-list))
+  (let* ((x (rnd-list))
+         (y (rnd-list))
          (xs (apply #'slist nil x))
          (ys (apply #'slist nil y)))
     (call-next-method)))
