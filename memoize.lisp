@@ -1,30 +1,33 @@
 (defpackage cl4l-memoize
-  (:export do-memoize memoize memoize-clear with-memoize)
+  (:export do-memoize make-memoize-context memoize memoize-clear
+           with-memoize)
   (:import-from cl4l-macro-utils with-gsyms)
   (:import-from cl4l-test define-test)
   (:use cl))
 
 (in-package cl4l-memoize)
 
-(defun make-context ()
+(defun make-memoize-context ()
   ;; Returns new context
   (make-hash-table :test #'equal))
 
 ;; Default context
-(defvar *context* (make-context))
+(defvar *context* (make-memoize-context))
 
-(defmacro do-memoize ((cnd key) &body body)
+(defmacro do-memoize ((cnd key &optional context)
+                      &body body)
   ;; Memoizes BODY for ARGS
-  (with-gsyms (_found _id _key)
-    `(let* ((,_key (list ',_id ,key))
-            (,_found (gethash ,_key *context*)))
+  (with-gsyms (_context _found _id _key)
+    `(let* ((,_context (or ,context *context*))
+            (,_key (list ',_id ,key))
+            (,_found (gethash ,_key ,_context)))
        (or (and ,cnd ,_found)
-           (setf (gethash ,_key *context*)
+           (setf (gethash ,_key ,_context)
                  (progn ,@body))))))
 
-(defmacro with-memoize (&body body)
-  ;; Executes BODY in new context
-  `(let (*context* (make-context))
+(defmacro with-memoize ((&optional context) &body body)
+  ;; Executes BODY in context
+  `(let (*context* (or ,context (make-memoize-context)))
      ,@body))
 
 (defun memoize (fn)

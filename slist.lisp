@@ -112,9 +112,9 @@
   ;; Adds IT to SELF after START and returns IT
   (multiple-value-bind (prev found?)
       (slist-prev self key it :start start)
-    (unless (and (lst-uniq? self)
-                 found?
-                 (eq it (second prev)))
+    (unless (and found?
+                 (or (lst-uniq? self)
+                     (zerop (compare it (second prev)))))
       (slist-ins self prev it))))
 
 (defun slist-del (self prev)

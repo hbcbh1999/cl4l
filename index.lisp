@@ -53,9 +53,10 @@
                               :uniq? uniq?)))
     idx))
 
-(defun index-find (self key &optional rec)
-  ;; Returns items from KEY/REC in SELF
-  (slist-find (idx-recs self) key rec))
+(defun index-find (self key &key rec start)
+  ;; Returns item with KEY/IT in SELF, from START excl.;
+  ;; or NIL if not found.
+  (slist-find (idx-recs self) key rec :start start))
 
 (defun index-add (self rec &key (key (index-key self rec))
                                 start
@@ -102,7 +103,7 @@
   ;; Returns the last record from SELF
   (slist-last (idx-recs self)))
 
-(defun index-rem (self key rec &key start (trans *trans*))
+(defun index-rem (self key &key rec start (trans *trans*))
   ;; Removes KEY/REC from SELF after START and returns item
   (let ((rec (slist-rem (idx-recs self) key rec :start start)))
     (when (and rec trans)
@@ -113,7 +114,8 @@
 (defun index-rollback (&optional (trans *trans*))
   ;; Rolls back and clears changes made in TRANS
   (dolist (ch (nreverse (trans-add trans)))
-    (index-rem (change-index ch) (change-key ch) (change-rec ch)
+    (index-rem (change-index ch) (change-key ch)
+               :rec (change-rec ch)
                :trans nil))
 
   (dolist (ch (nreverse (trans-rem trans)))

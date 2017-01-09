@@ -1,5 +1,3 @@
-* add multi set test
-** find on key and item
-** add to index blog
+* externalize index trans like memoize context
 * optimize index usage of slist
 ** use prev instead of find and forward to add / rem

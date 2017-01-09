@@ -25,8 +25,7 @@
     (dotimes (i 10) (index-add idx i))
     (let ((clone (index-clone idx)))
       (dotimes (i 10) (assert (index-rem clone
-                                         (index-key clone i)
-                                         nil)))
+                                         (index-key clone i))))
       (assert (zerop (index-len clone))))
     (assert (= 10 (index-len idx)))))
 
@@ -49,7 +48,6 @@
     (with-index
       (let* ((rec (make-rec :foo 1 :bar 2 :baz "ab"))
              (key (index-key idx rec)))
-        ;; Add record
         (index-add idx rec)
 
         ;; Rollback and make sure record is gone
@@ -60,7 +58,7 @@
         ;; Add again, commit and remove
         (index-add idx rec)
         (index-commit)
-        (index-rem idx key nil)
+        (index-rem idx key)
 
         ;; Rollback and make sure record is still there
         (index-rollback)
@@ -74,3 +72,27 @@
       (incf (first rec))
       (index-add idx rec))
     (assert (= 1 (index-len idx)))))
+
+(define-test (:index :multi)
+  ;; Indexes are non unique by default
+  (let ((idx (make-index (list #'first #'second))))
+    (with-index
+      (index-add idx '(1 2 3))
+
+      ;; Duplicate records are not allowed
+      (assert (null (index-add idx '(1 2 3))))
+
+      (let* ((rec '(1 2 4))
+            (key (index-key idx rec)))
+        ;; But same key in different record is fine
+        (assert (index-add idx rec))
+
+        ;; The api supports optionally specifying both
+        ;; keys and records
+        (assert (eq rec (index-find idx key :rec rec)))
+        (index-rem idx key :rec rec)
+        (assert (null (index-find idx key :rec rec)))
+        
+        ;; Not specifying a record returns first record with
+        ;; matching key
+        (assert (index-find idx key))))))
