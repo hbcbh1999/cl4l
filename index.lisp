@@ -48,14 +48,14 @@
                               :uniq? uniq?)))
     idx))
 
-(defun index-find (self key)
-  (slist-find (idx-recs self) key))
+(defun index-find (self key rec)
+  (slist-find (idx-recs self) key rec))
 
 (defun index-add (self rec &key (key (index-key self rec))
                                 (trans *trans*))
   (when (slist-add (idx-recs self) rec :key key)
     (when trans
-      (push (make-change :index self :key key)
+      (push (make-change :index self :key key :rec rec)
             (trans-add trans)))
     rec))
 
@@ -77,8 +77,8 @@
 (defun index-diff (self other)
   (slist-diff (idx-recs self) (idx-recs other)))
 
-(defun index-first (self &key key)
-  (slist-first (idx-recs self) :key key))
+(defun index-first (self &optional key rec)
+  (slist-first (idx-recs self) key rec))
 
 (defun index-join (self other)
   (slist-join (idx-recs self) (idx-recs other)))
@@ -86,8 +86,8 @@
 (defun index-last (self)
   (slist-last (idx-recs self)))
 
-(defun index-rem (self key &key (trans *trans*))
-  (let ((rec (slist-rem (idx-recs self) key)))
+(defun index-rem (self key rec &key (trans *trans*))
+  (let ((rec (slist-rem (idx-recs self) key rec)))
     (when (and rec trans)
       (push (make-change :index self :rec rec)
             (trans-rem trans)))
@@ -95,7 +95,8 @@
 
 (defun index-rollback (&key (trans *trans*))
   (dolist (ch (trans-add trans))
-    (index-rem (change-index ch) (change-key ch) :trans nil))
+    (index-rem (change-index ch) (change-key ch) (change-rec ch)
+               :trans nil))
 
   (dolist (ch (trans-rem trans))
     (index-add (change-index ch) (change-rec ch) :trans nil))

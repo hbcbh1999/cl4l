@@ -1,5 +1,5 @@
-* compare items if keys compare 0 & (not uniq?) in slist-prev
-** add multi test
+* add multi set test
+** find on key and item
 * document index
 * add readme
 * optimize index usage of slist

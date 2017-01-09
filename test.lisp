@@ -23,13 +23,13 @@
                   internal-time-units-per-second))))))
 
 (defun test (tags fn &key (suite *suite*))
-  (let ((found (slist-find suite tags)))
+  (let ((found (slist-find suite tags nil)))
     (if found
         (setf (rest found) fn)
         (slist-add suite (cons tags fn)))))
 
 (defun untest (tags &key (suite *suite*))
-  (slist-rem suite tags))
+  (slist-rem suite tags nil))
 
 (defgeneric run-tests (tags &key)  
   (:method (tags &key (warmup 0) (reps 1)
