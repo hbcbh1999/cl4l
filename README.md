@@ -5,7 +5,7 @@
 cl4l is a coherent set of Common Lisp utilities designed for maximum leverage.
 
 ### setup
-The project supports asdf and may be loaded by calling ```(ql:quickload "cl4l")``` once cl4l.asd is in the asdf search path. Calling ```(cl4l-test:run-tests nil)``` runs all tests.
+The project supports asdf and may be loaded by calling ```(ql:quickload "cl4l")``` once cl4l.asd is in the asdf search path. Call ```(cl4l-test:run-tests nil)``` to run tests.
 
 ### memoization
 ```memoize.lisp``` implements support for general purpose memoization of optionally parameterized computations.
@@ -16,7 +16,7 @@ The project supports asdf and may be loaded by calling ```(ql:quickload "cl4l")`
 ### indexes
 ```index.lisp``` implements ordered, optionally unique composite key indexes with transaction support.
 
-### test
+### tests
 ```test.lisp``` implements a testing framework based on the idea of using tags to group and trigger tests dynamically.
 
 ### license
