@@ -15,7 +15,8 @@
 (defvar *trans* nil)
 
 (defmacro with-index (&body body)
-;; Executes BODY in new transaction
+;; Executes BODY in new transaction that is automatically
+;; rolled back on early and committed on normal exit
   (with-gsyms (_res)
     `(let ((*trans* (make-trans)))
        (unwind-protect

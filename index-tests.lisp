@@ -43,7 +43,9 @@
 (define-test (:index :trans)
   (let ((idx (make-index (list #'rec-foo #'rec-bar) :uniq? t)))
 
-    ;; Start new transaction
+    ;; Start new transaction that is automatically
+    ;; rolled back on early and committed on
+    ;; normal exit
     (with-index
       (let* ((rec (make-rec :foo 1 :bar 2 :baz "ab"))
              (key (index-key idx rec)))
