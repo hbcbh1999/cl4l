@@ -1,18 +1,17 @@
 (defpackage cl4l-memoize
-  (:export make-memoize
-           do-memoize memoize memoize-clear with-memoize)
+  (:export do-memoize memoize memoize-clear with-memoize)
   (:import-from cl4l-macro-utils with-gsyms)
   (:import-from cl4l-test define-test)
   (:use cl))
 
 (in-package cl4l-memoize)
 
-(defun make-memoize ()
+(defun make-context ()
   ;; Returns new context
   (make-hash-table :test #'equal))
 
 ;; Default context
-(defvar *context* (make-memoize))
+(defvar *context* (make-context))
 
 (defmacro do-memoize ((cnd key) &body body)
   ;; Memoizes BODY for ARGS
@@ -25,7 +24,7 @@
 
 (defmacro with-memoize (&body body)
   ;; Executes BODY in new context
-  `(let (*context* (make-memoize))
+  `(let (*context* (make-context))
      ,@body))
 
 (defun memoize (fn)
