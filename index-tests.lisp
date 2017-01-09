@@ -77,22 +77,26 @@
   ;; Indexes are non unique by default
   (let ((idx (make-index (list #'first #'second))))
     (index-add idx '(1 2 3))
+    (index-add idx '(4 5 6))
     
     ;; Duplicate records are not allowed
-    
     (assert (null (index-add idx '(1 2 3))))
     
     (let* ((rec '(1 2 4))
            (key (index-key idx rec)))
       ;; But same key in different record is fine
       (assert (index-add idx rec))
-      
-      ;; The api supports optionally specifying both
-      ;; keys and records
+
+      ;; Records are sorted within the same key using
+      ;; the same generic #'COMPARE as keys
+      (let ((found (index-first idx key)))
+        (assert (eq '(1 2 3) (first found)))
+        (assert (eq rec (second found)))
+        (assert (equal '(4 5 6) (third found))))
+
+      ;; The api supports optionally specifying record as well
+      ;; as key, default is first record matching key
       (assert (eq rec (index-find idx key :rec rec)))
       (index-rem idx key :rec rec)
       (assert (null (index-find idx key :rec rec)))
-      
-      ;; Not specifying a record returns first record with
-      ;; matching key
-      (assert (index-find idx key)))))
+      (assert (equal '(1 2 3) (index-find idx key))))))
