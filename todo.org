@@ -1,2 +1,3 @@
+* change test to check if all run tags are in tags
 * optimize index usage of slist
 ** use prev instead of find and forward to add / rem

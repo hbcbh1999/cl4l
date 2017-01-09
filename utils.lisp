@@ -1,5 +1,6 @@
 (defpackage cl4l-utils
-  (:export compare do-hash-table let-when)
+  (:export compare defer do-hash-table let-when string! symbol!
+           with-defer)
   (:import-from cl4l-macro-utils with-gsyms)
   (:use cl))
 
@@ -40,6 +41,18 @@
   (:method ((x symbol) y)
     (compare (symbol-name x) (symbol-name y))))
 
+(defmacro with-defer ((&optional name) &body body)
+  (let ((_name (or name (gensym))))
+    `(macrolet ((,(symbol! 'defer- _name) (&body forms)
+                  (let ((n ',_name))
+                    `(push (lambda () ,@forms) ,n)))
+                (defer (&body forms)
+                  `(,(symbol! 'defer- ',_name) ,@forms)))
+       (let ((,_name))
+         ,@body
+         (dolist (fn ,_name)
+           (funcall fn))))))
+
 (defmacro do-hash-table ((tbl key val) &body body)
   (with-gsyms (_found _iter)
     `(with-hash-table-iterator (,_iter ,tbl)
@@ -56,3 +69,11 @@
   `(let ((,var ,expr))
      (when ,cnd ,@body)
      ,var))
+
+(defun string! (x)
+  (if (eq 'string (type-of x)) x (princ-to-string x)))
+
+(defun symbol! (&rest args)
+  (intern (apply #'concatenate 'string
+                 (mapcar #'string-upcase
+                         (mapcar #'string! args)))))
