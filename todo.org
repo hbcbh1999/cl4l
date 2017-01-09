@@ -2,3 +2,4 @@
 * add readme
 * optimize index usage of slist
 ** use prev instead of find and forward to add / rem
+* figure out why slist-merge is so much slower than nunion
