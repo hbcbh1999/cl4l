@@ -8,20 +8,18 @@
   foo bar baz)
 
 (define-test (:index :basic)
-  (let* ((idx (make-index (list #'rec-foo #'rec-bar)
-                          :uniq? t))
+  (let* ((idx (make-index (list #'rec-foo #'rec-bar)))
          (rec1 (index-add idx (make-rec :foo 1 :bar 2 :baz "ab")))
          (rec2 (index-add idx (make-rec :foo 2 :bar 3 :baz "bc")))
          (rec3 (index-add idx (make-rec :foo 3 :bar 4 :baz "cd"))))
     (assert (and rec1 rec2 rec3))
-    (assert (null (index-add idx rec1)))
     (assert (= 3 (index-len idx)))
     (assert (eq rec1 (index-find idx (index-key idx rec1))))
     (assert (eq rec2 (index-find idx (index-key idx rec2))))
     (assert (eq rec3 (index-find idx (index-key idx rec3))))))
 
 (define-test (:index :clone)
-  (let ((idx (make-index (list #'identity) :uniq? t)))
+  (let ((idx (make-index (list #'identity))))
     (dotimes (i 10) (index-add idx i))
     (let ((clone (index-clone idx)))
       (dotimes (i 10) (assert (index-rem clone
@@ -30,8 +28,7 @@
     (assert (= 10 (index-len idx)))))
 
 (define-test (:index :str)
-  (let* ((idx (make-index (list #'length #'identity)
-                          :uniq? t))
+  (let* ((idx (make-index (list #'length #'identity)))
          (rec1 (index-add idx "ab"))
          (rec2 (index-add idx "cd"))
          (rec3 (index-add idx "z"))
@@ -41,7 +38,7 @@
     (assert (string= rec2 (pop recs)))))
 
 (define-test (:index :trans)
-  (let ((idx (make-index (list #'rec-foo) :uniq? t)))
+  (let ((idx (make-index (list #'rec-foo))))
     (with-index
       (let* ((rec (index-add idx (make-rec :foo 1 :baz "ab")))
              (key (index-key idx rec)))

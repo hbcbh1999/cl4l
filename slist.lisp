@@ -11,14 +11,17 @@
 (in-package cl4l-slist)
 
 (defstruct (slist (:conc-name sl-) (:constructor make-sl)) 
-  (head nil) 
-  (key nil) 
+  head 
+  key 
   (len 0) 
-  (tail nil))
+  tail
+  uniq?)
 
 (defun make-slist (&rest args)
   ;; Returns a new slist from ARGS
   (let ((lst (apply #'make-sl args)))
+    (unless (sl-head lst)
+      (setf (sl-head lst) (list nil)))
     (unless (sl-tail lst)
       (setf (sl-tail lst) (last (sl-head lst))))
     lst))
@@ -38,7 +41,8 @@
   (let ((its (copy-list (sl-head self))))
     (make-slist :key (sl-key self) 
 		:head its 
-		:len (sl-len self))))
+		:len (sl-len self)
+                :uniq? (sl-uniq? self))))
 
 (defun slist-key (self it)
   ;; Returns the key for IT in SELF
@@ -105,11 +109,15 @@
     (incf (sl-len self))
     it))
 
-(defun slist-add (self it &key (start (sl-head self)))
+(defun slist-add (self it &key (key (slist-key self it))
+                               (start (sl-head self)))
   ;; Adds IT to SELF after START and returns IT
-  (slist-ins self
-             (slist-prev self (slist-key self it) :start start)
-             it))
+  (multiple-value-bind (prev found?)
+      (slist-prev self key :start start)
+    (unless (and (sl-uniq? self)
+                 found?
+                 (zerop (compare it (second prev))))
+      (slist-ins self prev it))))
 
 (defun slist-del (self prev)
   ;; Deletes item after PREV from SELF returns it

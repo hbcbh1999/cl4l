@@ -7,7 +7,6 @@
            make-index make-trans
            with-index)
   (:import-from cl4l-macro-utils with-gsyms)
-  (:import-from cl4l-utils do-hash-table)
   (:use cl cl4l-slist))
 
 (in-package cl4l-index)
@@ -26,23 +25,27 @@
          (index-rollback)))))
 
 (defstruct (index (:conc-name idx-) (:constructor make-idx)) 
-  (keys nil)
-  (name (gensym))
-  (recs nil)
-  (uniq? nil))
+  keys name recs)
 
-(defun make-trans ()
-  (make-hash-table :test #'eq))
+(defstruct (trans)
+  (add nil)
+  (rem nil))
+
+(defstruct (change)
+  index key rec)
 
 (defun index-key (self rec)
   (mapcar (lambda (fn) (funcall fn rec)) (idx-keys self)))
 
-(defun make-index (keys &rest args)
-  (let ((idx (apply #'make-idx :keys keys args)))
+(defun make-index (keys &key (name (gensym)) recs uniq?)
+  (let ((idx (make-idx :keys keys
+                       :name name
+                       :recs recs)))
     (unless (idx-recs idx)
             (setf (idx-recs idx)
-                  (slist (lambda (rec)
-                           (index-key idx rec)))))
+                  (make-slist :key (lambda (rec)
+                                     (index-key idx rec))
+                              :uniq? uniq?)))
     idx))
 
 (defun index-find (self key)
@@ -50,20 +53,23 @@
 
 (defun index-add (self rec &key (key (index-key self rec))
                                 (trans *trans*))
-  (let ((found (index-find self key)))
-    (unless (and found (idx-uniq? self))
-      (when trans
-        (setf (gethash (cons self rec) trans) key))
-      (slist-add (idx-recs self) rec))))
+  (when (slist-add (idx-recs self) rec :key key)
+    (when trans
+      (push (make-change :index self :key key)
+            (trans-add trans)))
+    rec))
 
 (defun index-clone (self &rest args)
   (apply #'make-index (idx-keys self)
-         :uniq? (idx-uniq? self)
          :recs (slist-clone (idx-recs self))
          args))
 
+(defun trans-clear (self)
+  (setf (trans-add self) nil
+        (trans-rem self) nil))
+
 (defun index-commit (&key (trans *trans*))
-  (clrhash trans))
+  (trans-clear trans))
 
 (defun index-del (self prev)
   (slist-del (idx-recs self) prev))
@@ -83,15 +89,18 @@
 (defun index-rem (self key &key (trans *trans*))
   (let ((rec (slist-rem (idx-recs self) key)))
     (when (and rec trans)
-      (setf (gethash (cons self rec) trans) t))
+      (push (make-change :index self :rec rec)
+            (trans-rem trans)))
     rec))
 
 (defun index-rollback (&key (trans *trans*))
-  (do-hash-table (trans k v)
-    (if (eq v t)
-        (index-add (first k) (rest k) :trans nil)
-        (index-rem (first k) v :trans nil)))
-  (clrhash trans))
+  (dolist (ch (trans-add trans))
+    (index-rem (change-index ch) (change-key ch) :trans nil))
+
+  (dolist (ch (trans-rem trans))
+    (index-add (change-index ch) (change-rec ch) :trans nil))
+
+  (trans-clear trans))
 
 (defun index-len (self)
   (slist-len (idx-recs self)))
