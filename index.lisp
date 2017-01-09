@@ -51,9 +51,9 @@
 (defun index-add (self rec &key (key (index-key self rec))
                                 (trans *trans*))
   (let ((found (index-find self key)))
-    (when trans
-      (setf (gethash (cons self rec) trans) key))
     (unless (and found (idx-uniq? self))
+      (when trans
+        (setf (gethash (cons self rec) trans) key))
       (slist-add (idx-recs self) rec))))
 
 (defun index-clone (self &rest args)
