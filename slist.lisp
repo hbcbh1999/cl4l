@@ -10,20 +10,16 @@
 
 (in-package cl4l-slist)
 
-(defstruct (slist (:conc-name sl-) (:constructor make-sl)) 
-  head 
-  key 
-  (len 0) 
-  tail
-  uniq?)
+(defstruct (lst) 
+  head key (len 0) tail uniq?)
 
 (defun make-slist (&rest args)
   ;; Returns a new slist from ARGS
-  (let ((lst (apply #'make-sl args)))
-    (unless (sl-head lst)
-      (setf (sl-head lst) (list nil)))
-    (unless (sl-tail lst)
-      (setf (sl-tail lst) (last (sl-head lst))))
+  (let ((lst (apply #'make-lst args)))
+    (unless (lst-head lst)
+      (setf (lst-head lst) (list nil)))
+    (unless (lst-tail lst)
+      (setf (lst-tail lst) (last (lst-head lst))))
     lst))
 
 (defun slist (key &rest its)
@@ -38,65 +34,65 @@
 
 (defun slist-clone (self)
   ;; Returns a shallow clone of SELF
-  (let ((its (copy-list (sl-head self))))
-    (make-slist :key (sl-key self) 
+  (let ((its (copy-list (lst-head self))))
+    (make-slist :key (lst-key self) 
 		:head its 
-		:len (sl-len self)
-                :uniq? (sl-uniq? self))))
+		:len (lst-len self)
+                :uniq? (lst-uniq? self))))
 
 (defun slist-key (self it)
   ;; Returns the key for IT in SELF
-  (let ((key (sl-key self)))
+  (let ((key (lst-key self)))
     (if key (funcall key it) it)))
 
 (defun (setf slist-key) (key self)
   ;; Sets KEY in SELF
-  (setf (sl-key self) key))
+  (setf (lst-key self) key))
 
 
 (defun slist-last (self)
   ;; Returns the last item from SELF
-  (sl-tail self))
+  (lst-tail self))
 
 (defun slist-len (self)
   ;; Returns the length of SELF
-  (sl-len self))
+  (lst-len self))
 
-(defun slist-prev (self key it &key (start (sl-head self)))
+(defun slist-prev (self key it &key (start (lst-head self)))
   ;; Returns the previous item in SELF matching KEY/IT,
   ;; from START excl.
   (if (null (rest start))
       (values start nil 0)
-      (let* ((lit (sl-tail self))
+      (let* ((lit (lst-tail self))
 	     (lit-cmp (compare key 
                                (slist-key self (first lit)))))
 	(if  (> lit-cmp 0)
-	     (values lit (zerop lit-cmp) (sl-len self))
+	     (values lit (zerop lit-cmp) (lst-len self))
 	     (do ((its start (rest its))
 		  (pos 0 (1+ pos)))
 		 ((null (rest its)) 
-		  (values (sl-tail self) nil pos))
+		  (values (lst-tail self) nil pos))
 	       (let ((cmp (compare key 
                                    (slist-key 
                                     self (second its)))))
-                 (when (and (zerop cmp) (not (sl-uniq? self)) it )
+                 (when (and (zerop cmp) (not (lst-uniq? self)) it)
                    (setf cmp (compare it (second its))))
 		 (when (< cmp 1)
 		   (return (values its (zerop cmp) pos)))))))))
 
 (defun slist-first (self &optional key it)
-  ;; Returns all items in SELF, optionally from KEY incl.
-  (rest (if key (slist-prev self key it) (sl-head self))))
+  ;; Returns all items in SELF, optionally from KEY/IT incl.
+  (rest (if key (slist-prev self key it) (lst-head self))))
 
-(defun slist-find (self key it &key (start (sl-head self)))
-  ;; Returns item with KEY in SELF, from START excl.;
+(defun slist-find (self key it &key (start (lst-head self)))
+  ;; Returns item with KEY/IT in SELF, from START excl.;
   ;; or NIL if not found.
   (multiple-value-bind (prev found?) 
       (slist-prev self key it :start start)
     (when found? (first (rest prev)))))
 
-(defun slist-pos (self key it &key (start (sl-head self)))
-  ;; Returns the position of KEY in SELF, from START excl.;
+(defun slist-pos (self key it &key (start (lst-head self)))
+  ;; Returns the position of KEY/IT in SELF, from START excl.;
   ;; or NIL if not found.
   (multiple-value-bind (prev found? pos) 
       (slist-prev self key it :start start)
@@ -106,31 +102,31 @@
 (defun slist-ins (self prev it)
   ;; Inserts IT after PREV in SELF and returns IT
   (let* ((its (push it (rest prev))))
-    (when (eq prev (sl-tail self))
-      (setf (sl-tail self) its))
-    (incf (sl-len self))
+    (when (eq prev (lst-tail self))
+      (setf (lst-tail self) its))
+    (incf (lst-len self))
     it))
 
 (defun slist-add (self it &key (key (slist-key self it))
-                               (start (sl-head self)))
+                               (start (lst-head self)))
   ;; Adds IT to SELF after START and returns IT
   (multiple-value-bind (prev found?)
       (slist-prev self key it :start start)
-    (unless (and (sl-uniq? self)
+    (unless (and (lst-uniq? self)
                  found?
                  (eq it (second prev)))
       (slist-ins self prev it))))
 
 (defun slist-del (self prev)
   ;; Deletes item after PREV from SELF returns it
-  (when (eq (rest prev) (sl-tail self))
-    (setf (sl-tail self) prev))
+  (when (eq (rest prev) (lst-tail self))
+    (setf (lst-tail self) prev))
   (let ((it (second prev)))
     (pop (rest prev))
-    (decf (sl-len self))
+    (decf (lst-len self))
     it))
 
-(defun slist-rem (self key it &key (start (sl-head self)))
+(defun slist-rem (self key it &key (start (lst-head self)))
   ;; Removes KEY from SELF after START and returns item
   (multiple-value-bind (prev found?) 
       (slist-prev self key it :start start)
@@ -139,7 +135,7 @@
 (defun slist-match (self other &optional prev-match)
   ;; Returns next matching items from (SELF . OTHER)
   (unless prev-match
-    (setf prev-match (cons (sl-head self) (sl-head other))))
+    (setf prev-match (cons (lst-head self) (lst-head other))))
   (let* ((start (first prev-match)) (prev-iit start))
     (do ((iit (rest start)) 
          (jit (rest (rest prev-match))))
@@ -164,7 +160,7 @@
   ;; returns self.
   (do ((m nil)
        (first? t nil)
-       (prev (sl-head self) (rest (first m)))) (nil)
+       (prev (lst-head self) (rest (first m)))) (nil)
     (setf m (slist-match self other m))
     
     (do ((it (second (first m))))
@@ -186,7 +182,7 @@
   ;; returns SELF.
   (do ((m nil)
        (first? t nil)
-       (start (sl-head self) (rest (first m)))
+       (start (lst-head self) (rest (first m)))
        (prev (slist-first other) (rest (rest m)))) (nil)
     (setf m (slist-match self other m))
 

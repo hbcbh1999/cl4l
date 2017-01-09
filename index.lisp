@@ -24,18 +24,19 @@
                 ,_res))
          (index-rollback)))))
 
-(defstruct (index (:conc-name idx-) (:constructor make-idx)) 
+(defstruct (idx) 
   keys name recs)
 
 (defstruct (trans)
-  (add nil)
-  (rem nil))
+  add rem)
 
 (defstruct (change)
   index key rec)
 
 (defun index-key (self rec)
-  (mapcar (lambda (fn) (funcall fn rec)) (idx-keys self)))
+  (mapcar (lambda (fn)
+            (if (eq fn t) rec (funcall fn rec)))
+          (idx-keys self)))
 
 (defun make-index (keys &key (name (gensym)) recs uniq?)
   (let ((idx (make-idx :keys keys
@@ -99,7 +100,9 @@
                :trans nil))
 
   (dolist (ch (trans-rem trans))
-    (index-add (change-index ch) (change-rec ch) :trans nil))
+    (index-add (change-index ch) (change-rec ch)
+               :key (change-key ch)
+               :trans nil))
 
   (trans-clear trans))
 
