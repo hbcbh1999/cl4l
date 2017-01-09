@@ -8,15 +8,17 @@
   foo bar baz)
 
 (define-test (:index :basic)
-  (let* ((idx (make-index (list #'rec-foo #'rec-bar)))
+  (let* ((idx (make-index (list #'rec-foo #'rec-bar) :uniq? t))
          (rec1 (index-add idx (make-rec :foo 1 :bar 2 :baz "ab")))
          (rec2 (index-add idx (make-rec :foo 2 :bar 3 :baz "bc")))
          (rec3 (index-add idx (make-rec :foo 3 :bar 4 :baz "cd"))))
+
+    ;; Make sure all records were added
     (assert (and rec1 rec2 rec3))
     (assert (= 3 (index-len idx)))
-    (assert (eq rec1 (index-find idx (index-key idx rec1))))
-    (assert (eq rec2 (index-find idx (index-key idx rec2))))
-    (assert (eq rec3 (index-find idx (index-key idx rec3))))))
+    
+    ;; Find by key
+    (assert (eq rec2 (index-find idx (index-key idx rec2))))))
 
 (define-test (:index :clone)
   (let ((idx (make-index (list t))))
@@ -39,17 +41,26 @@
     (assert (string= rec2 (pop recs)))))
 
 (define-test (:index :trans)
-  (let ((idx (make-index (list #'rec-foo) :uniq? t)))
+  (let ((idx (make-index (list #'rec-foo #'rec-bar) :uniq? t)))
+
+    ;; Start new transaction
     (with-index
-      (let* ((rec (index-add idx (make-rec :foo 1 :baz "ab")))
+      (let* ((rec (make-rec :foo 1 :bar 2 :baz "ab"))
              (key (index-key idx rec)))
+        ;; Add record
+        (index-add idx rec)
+
+        ;; Rollback and make sure record is gone
         (index-rollback)
         (assert (= 0 (index-len idx)))
         (assert (null (index-find idx key)))
-        (assert (index-add idx rec))
+
+        ;; Add again, commit and remove
+        (index-add idx rec)
         (index-commit)
-        (assert (eq rec (index-find idx key)))
-        (assert (eq rec (index-rem idx key nil)))
+        (index-rem idx key nil)
+
+        ;; Rollback and make sure record is still there
         (index-rollback)
         (assert (eq rec (index-find idx key)))))))
 
