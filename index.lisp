@@ -95,11 +95,11 @@
     rec))
 
 (defun index-rollback (&key (trans *trans*))
-  (dolist (ch (trans-add trans))
+  (dolist (ch (nreverse (trans-add trans)))
     (index-rem (change-index ch) (change-key ch) (change-rec ch)
                :trans nil))
 
-  (dolist (ch (trans-rem trans))
+  (dolist (ch (nreverse (trans-rem trans)))
     (index-add (change-index ch) (change-rec ch)
                :key (change-key ch)
                :trans nil))
