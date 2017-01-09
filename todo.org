@@ -1,6 +1,6 @@
 * add multi set test
 ** find on key and item
+* copy lispy sets to github blog
 * document index
-* add readme
 * optimize index usage of slist
 ** use prev instead of find and forward to add / rem
