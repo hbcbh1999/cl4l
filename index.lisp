@@ -5,7 +5,7 @@
            index-match index-merge
            index-rem index-rollback
            make-index make-index-trans
-           with-index)
+           with-index-trans)
   (:import-from cl4l-macro-utils with-gsyms)
   (:use cl cl4l-slist))
 
@@ -14,7 +14,7 @@
 ;; Default trans
 (defvar *trans* nil)
 
-(defmacro with-index ((&optional trans) &body body)
+(defmacro with-index-trans ((&optional trans) &body body)
 ;; Executes BODY in transaction that is automatically
 ;; rolled back on early and committed on normal exit
   (with-gsyms (_res)
