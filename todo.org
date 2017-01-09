@@ -1,4 +1,3 @@
-* change slist-merge to provide start when adding
 * document index
 * add readme
 * optimize index usage of slist

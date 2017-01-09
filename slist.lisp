@@ -1,7 +1,8 @@
 (defpackage cl4l-slist
   (:export make-slist
            slist slist-add slist-clone slist-del
-           slist-diff slist-find slist-first slist-join slist-key
+           slist-diff slist-find slist-first slist-ins slist-join
+           slist-key
            slist-last slist-len slist-match slist-merge
            slist-prev slist-rem)
   (:import-from cl4l-utils compare)
@@ -96,14 +97,19 @@
     (declare (ignore prev))
     (when found? pos)))
 
-(defun slist-add (self it &key (start (sl-head self)))
-  ;; Adds IT to SELF after START and returns IT
-  (let* ((prev (slist-prev self (slist-key self it) :start start))
-	 (its (push it (rest prev))))
+(defun slist-ins (self prev it)
+  ;; Inserts IT after PREV in SELF and returns IT
+  (let* ((its (push it (rest prev))))
     (when (eq prev (sl-tail self))
       (setf (sl-tail self) its))
     (incf (sl-len self))
     it))
+
+(defun slist-add (self it &key (start (sl-head self)))
+  ;; Adds IT to SELF after START and returns IT
+  (slist-ins self
+             (slist-prev self (slist-key self it) :start start)
+             it))
 
 (defun slist-del (self prev)
   ;; Deletes item after PREV from SELF returns it
@@ -170,6 +176,7 @@
   ;; returns SELF.
   (do ((m nil)
        (first? t nil)
+       (start (sl-head self) (rest (first m)))
        (prev (slist-first other) (rest (rest m)))) (nil)
     (setf m (slist-match self other m))
 
@@ -177,7 +184,8 @@
          (pits prev (rest pits)))
         ((or (null pits)
              (eq it (first pits))))
-      (slist-add self (first pits)))
+      (slist-ins self start (first pits))
+      (setf start (rest start)))
 
     (unless m (return self))))
 

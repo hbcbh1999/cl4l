@@ -29,10 +29,10 @@
     (assert (= 3 (slist-len xy)))))
 
 (define-test (:slist :merge)
-  (let* ((x (slist nil 1 2 3 4 5))
-	 (y (slist nil 1 3 5 6 7)))
+  (let* ((x (slist nil 1 6 9))
+	 (y (slist nil 1 2 3 4 5 7 8 9)))
     (slist-merge x y)
-    (assert (= 7 (slist-len x)))))
+    (assert (= 9 (slist-len x)))))
 
 (defparameter len 1000)
 
