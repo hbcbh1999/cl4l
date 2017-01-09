@@ -2,7 +2,7 @@
 #### esoteric CL essentials
 
 ### intro
-cl4l is a coherent set of Common Lisp utilities designed for maximum leverage.
+cl4l is a set of Common Lisp utilities designed for maximum leverage rather than academic appeal.
 
 ### setup
 The project supports asdf and may be loaded by calling ```(ql:quickload "cl4l")``` once cl4l.asd is in the asdf search path. Call ```(cl4l-test:run-tests nil)``` to run tests.
