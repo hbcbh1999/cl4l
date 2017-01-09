@@ -76,23 +76,23 @@
 (define-test (:index :multi)
   ;; Indexes are non unique by default
   (let ((idx (make-index (list #'first #'second))))
-    (with-index-trans ()
-      (index-add idx '(1 2 3))
-
-      ;; Duplicate records are not allowed
-      (assert (null (index-add idx '(1 2 3))))
-
-      (let* ((rec '(1 2 4))
-            (key (index-key idx rec)))
-        ;; But same key in different record is fine
-        (assert (index-add idx rec))
-
-        ;; The api supports optionally specifying both
-        ;; keys and records
-        (assert (eq rec (index-find idx key :rec rec)))
-        (index-rem idx key :rec rec)
-        (assert (null (index-find idx key :rec rec)))
-        
-        ;; Not specifying a record returns first record with
-        ;; matching key
-        (assert (index-find idx key))))))
+    (index-add idx '(1 2 3))
+    
+    ;; Duplicate records are not allowed
+    
+    (assert (null (index-add idx '(1 2 3))))
+    
+    (let* ((rec '(1 2 4))
+           (key (index-key idx rec)))
+      ;; But same key in different record is fine
+      (assert (index-add idx rec))
+      
+      ;; The api supports optionally specifying both
+      ;; keys and records
+      (assert (eq rec (index-find idx key :rec rec)))
+      (index-rem idx key :rec rec)
+      (assert (null (index-find idx key :rec rec)))
+      
+      ;; Not specifying a record returns first record with
+      ;; matching key
+      (assert (index-find idx key)))))
