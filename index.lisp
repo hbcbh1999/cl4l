@@ -4,7 +4,7 @@
            index-join index-key index-last index-len
            index-match index-merge
            index-rem index-rollback
-           make-index make-trans
+           make-index make-index-trans
            with-index)
   (:import-from cl4l-macro-utils with-gsyms)
   (:use cl cl4l-slist))
@@ -14,11 +14,11 @@
 ;; Default trans
 (defvar *trans* nil)
 
-(defmacro with-index (&body body)
-;; Executes BODY in new transaction that is automatically
+(defmacro with-index ((&optional trans) &body body)
+;; Executes BODY in transaction that is automatically
 ;; rolled back on early and committed on normal exit
   (with-gsyms (_res)
-    `(let ((*trans* (make-trans)))
+    `(let ((*trans* (or ,trans (make-index-trans))))
        (unwind-protect
             (progn
               (let ((,_res (progn ,@body)))
@@ -34,6 +34,9 @@
 
 (defstruct (change)
   index key rec)
+
+(defun make-index-trans ()
+  (make-trans))
 
 (defun index-key (self rec)
   ;; Returns key for REC in SELF

@@ -45,7 +45,7 @@
     ;; Start new transaction that is automatically
     ;; rolled back on early and committed on
     ;; normal exit
-    (with-index
+    (with-index ()
       (let* ((rec (make-rec :foo 1 :bar 2 :baz "ab"))
              (key (index-key idx rec)))
         (index-add idx rec)
@@ -67,7 +67,7 @@
 (define-test (:index :update)
   (let* ((idx (make-index (list #'first) :uniq? t))
          (rec (index-add idx '(41))))
-    (with-index
+    (with-index ()
       (index-add idx rec)
       (incf (first rec))
       (index-add idx rec))
@@ -76,7 +76,7 @@
 (define-test (:index :multi)
   ;; Indexes are non unique by default
   (let ((idx (make-index (list #'first #'second))))
-    (with-index
+    (with-index ()
       (index-add idx '(1 2 3))
 
       ;; Duplicate records are not allowed
