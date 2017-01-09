@@ -1,3 +1,5 @@
+* replace index #'identity with nil like slist
+** fast path in key
 * add multi set test
 ** find on key and item
 * document index
