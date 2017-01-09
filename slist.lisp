@@ -2,7 +2,8 @@
   (:export make-slist
            slist slist-add slist-clone slist-del
            slist-diff slist-find slist-first slist-join slist-key
-           slist-last slist-len slist-match slist-prev slist-rem)
+           slist-last slist-len slist-match slist-merge
+           slist-prev slist-rem)
   (:import-from cl4l-utils compare)
   (:use cl))
 
@@ -119,8 +120,7 @@
       (slist-prev self key :start start)
     (when found? (slist-del self prev))))
 
-(defun slist-match (self other
-                    &optional prev-match)
+(defun slist-match (self other &optional prev-match)
   ;; Returns next matching items from (SELF . OTHER)
   (unless prev-match
     (setf prev-match (cons (sl-head self) (sl-head other))))
@@ -146,26 +146,39 @@
 (defun slist-join (self other)
   ;; Removes all items from SELF that are not found in OTHER and
   ;; returns self.
-  (do ((m nil) (pm nil m)) (nil)
+  (do ((m nil)
+       (first? t nil)
+       (prev (sl-head self) (rest (first m)))) (nil)
     (setf m (slist-match self other m))
-    (when pm
-      (do ((it (second (first m)))
-           (pits (rest (first pm))))
-          ((eq it (second pits)) nil)
-        (slist-del self pits)))
-    (unless m
-      (unless pm
-        (setf (sl-head self) (list nil)
-              (sl-tail self) (sl-head self)
-              (sl-len self) 0))
-      (return self))))
+    
+    (do ((it (second (first m))))
+        ((eq it (second prev)) nil)
+      (slist-del self prev))
+    
+    (unless m (return self))))
 
 (defun slist-diff (self other)
   ;; Removes all items from SELF that are found in OTHER and
   ;; returns SELF.
-  (do ((m nil) (pm nil m)) (nil)
+  (do ((m nil)) (nil)
     (setf m (slist-match self other m))
     (when m (slist-del self (first m)))
+    (unless m (return self))))
+
+(defun slist-merge (self other)
+  ;; Adds all items from OTHER that are not found in SELF and
+  ;; returns SELF.
+  (do ((m nil)
+       (first? t nil)
+       (prev (slist-first other) (rest (rest m)))) (nil)
+    (setf m (slist-match self other m))
+
+    (do ((it (first (rest m)))
+         (pits prev (rest pits)))
+        ((or (null pits)
+             (eq it (first pits))))
+      (slist-add self (first pits)))
+
     (unless m (return self))))
 
 (defmethod compare ((x slist) y)

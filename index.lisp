@@ -2,6 +2,7 @@
   (:export index-add index-clone index-commit index-del index-diff
            index-find index-first
            index-join index-key index-last index-len
+           index-match index-merge
            index-rem index-rollback
            make-index make-trans
            with-index)
@@ -94,3 +95,9 @@
 
 (defun index-len (self)
   (slist-len (idx-recs self)))
+
+(defun index-match (self other &optional prev-match)
+  (slist-match (idx-recs self) (idx-recs other) prev-match))
+
+(defun index-merge (self other)
+  (slist-merge (idx-recs self) (idx-recs other)))
