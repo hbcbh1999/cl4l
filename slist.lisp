@@ -11,7 +11,7 @@
 (in-package cl4l-slist)
 
 (defstruct (lst) 
-  head key (len 0) tail uniq?)
+  head key (len 0) tail (uniq? t))
 
 (defun make-slist (&rest args)
   ;; Returns a new slist from ARGS

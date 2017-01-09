@@ -8,7 +8,7 @@
   foo bar baz)
 
 (define-test (:index :basic)
-  (let* ((idx (make-index (list #'rec-foo #'rec-bar) :uniq? t))
+  (let* ((idx (make-index (list #'rec-foo #'rec-bar)))
          (rec1 (index-add idx (make-rec :foo 1 :bar 2 :baz "ab")))
          (rec2 (index-add idx (make-rec :foo 2 :bar 3 :baz "bc")))
          (rec3 (index-add idx (make-rec :foo 3 :bar 4 :baz "cd"))))
@@ -40,7 +40,7 @@
     (assert (string= rec2 (pop recs)))))
 
 (define-test (:index :trans)
-  (let ((idx (make-index (list #'rec-foo #'rec-bar) :uniq? t)))
+  (let ((idx (make-index (list #'rec-foo #'rec-bar))))
 
     ;; Start new transaction that is automatically
     ;; rolled back on early and committed on
@@ -65,7 +65,7 @@
         (assert (eq rec (index-find idx key)))))))
 
 (define-test (:index :update)
-  (let* ((idx (make-index (list #'first) :uniq? t))
+  (let* ((idx (make-index (list #'first)))
          (rec (index-add idx '(41))))
     (with-index-trans ()
       (index-add idx rec)
@@ -74,8 +74,7 @@
     (assert (= 1 (index-len idx)))))
 
 (define-test (:index :multi)
-  ;; Indexes are non unique by default
-  (let ((idx (make-index (list #'first #'second))))
+  (let ((idx (make-index (list #'first #'second) :uniq? nil)))
     (index-add idx '(1 2 3))
     (index-add idx '(4 5 6))
     

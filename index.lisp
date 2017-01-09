@@ -44,7 +44,7 @@
             (if (eq fn t) rec (funcall fn rec)))
           (idx-keys self)))
 
-(defun make-index (keys &key (name (gensym)) recs uniq?)
+(defun make-index (keys &key (name (gensym)) recs (uniq? t))
   ;; Returns a new index
   (let ((idx (make-idx :keys keys
                        :name name
