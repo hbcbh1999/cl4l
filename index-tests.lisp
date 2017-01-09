@@ -93,7 +93,7 @@
         (assert (eq rec (second found)))
         (assert (equal '(4 5 6) (third found))))
 
-      ;; The api supports optionally specifying record as well
+      ;; The API supports optionally specifying record as well
       ;; as key, default is first record matching key
       (assert (eq rec (index-find idx key :rec rec)))
       (index-rem idx key :rec rec)

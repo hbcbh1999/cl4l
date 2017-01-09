@@ -1,5 +1,6 @@
 (defpackage cl4l-utils
-  (:export compare defer do-hash-table let-when string! symbol!
+  (:export compare defer do-hash-table let-when
+           str! string! symbol!
            with-defer)
   (:import-from cl4l-macro-utils with-gsyms)
   (:use cl))
@@ -70,10 +71,11 @@
      (when ,cnd ,@body)
      ,var))
 
-(defun string! (x)
-  (if (eq 'string (type-of x)) x (princ-to-string x)))
+(defun str! (x)
+  (if (stringp x) x (princ-to-string x)))
+
+(defun string! (&rest args)
+  (apply #'concatenate 'string (mapcar #'str! args)))
 
 (defun symbol! (&rest args)
-  (intern (apply #'concatenate 'string
-                 (mapcar #'string-upcase
-                         (mapcar #'string! args)))))
+  (intern (string-upcase (apply #'string! args))))
