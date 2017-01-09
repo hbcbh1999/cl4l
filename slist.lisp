@@ -116,7 +116,7 @@
       (slist-prev self key :start start)
     (unless (and (sl-uniq? self)
                  found?
-                 (zerop (compare it (second prev))))
+                 (eq it (second prev)))
       (slist-ins self prev it))))
 
 (defun slist-del (self prev)
