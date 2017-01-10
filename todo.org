@@ -1,6 +1,8 @@
 * add support for specifying test in memoize
-* copy trans support from index to slist
-** forward from slist macros/fns
+* fold index into slist
+** move support for composite keys from index to slist
+** move trans support from index to slist
+** update vicsy
 * move stored support / updates from vicsy to slist trans
 * add support for removing specific keys from memoize-context
 * optimize index usage of slist
