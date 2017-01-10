@@ -80,7 +80,7 @@
 		 (when (< cmp 1)
 		   (return (values its (zerop cmp) pos)))))))))
 
-(defun slist-first (self &optional key it)
+(defun slist-first (self &key key it)
   ;; Returns all items in SELF, optionally from KEY/IT incl.
   (rest (if key (slist-prev self key it) (lst-head self))))
 

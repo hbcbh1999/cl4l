@@ -98,9 +98,9 @@
   ;; returns SELF.
   (slist-diff (idx-recs self) (idx-recs other)))
 
-(defun index-first (self &optional key rec)
+(defun index-first (self &key key rec)
   ;; Returns all items in SELF, optionally from KEY/REC incl.
-  (slist-first (idx-recs self) key rec))
+  (slist-first (idx-recs self) :key key :it rec))
 
 (defun index-join (self other)
   ;; Removes all records from SELF that are not found in OTHER and

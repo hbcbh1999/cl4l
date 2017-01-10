@@ -87,7 +87,7 @@
 
       ;; Records are sorted within the same key using
       ;; the same generic #'COMPARE as keys
-      (let ((found (index-first idx key)))
+      (let ((found (index-first idx :key key)))
         (assert (eq '(1 2 3) (first found)))
         (assert (eq rec (second found)))
         (assert (equal '(4 5 6) (third found))))
