@@ -16,13 +16,15 @@
 (defmacro do-memoize ((cnd key &key context)
                       &body body)
   ;; Memoizes BODY for ARGS
-  (with-symbols (_context _found _id _key)
-    `(let* ((,_context (or ,context *context*))
-            (,_key (list ',_id ,key))
-            (,_found (gethash ,_key ,_context)))
-       (or (and ,cnd ,_found)
-           (setf (gethash ,_key ,_context)
-                 (progn ,@body))))))
+  (with-symbols (_cnd _context _found? _id _key)
+    `(let* ((,_cnd ,cnd)
+            (,_context (or ,context *context*))
+            (,_key (cons ',_id ,key))
+            (,_found? (and ,_cnd (gethash ,_key ,_context))))
+       (if ,_cnd
+           (or ,_found? (setf (gethash ,_key ,_context)
+                              (progn ,@body)))
+           (progn ,@body)))))
 
 (defmacro with-memoize ((&key context) &body body)
   ;; Executes BODY in context
@@ -33,6 +35,7 @@
 (defun memoize (fn)
   ;; Returns memoized wrapper for FN
   (lambda (&rest args)
+    (declare (sb-ext:muffle-conditions sb-ext:compiler-note))
     (do-memoize (t args)
       (apply fn args))))
 

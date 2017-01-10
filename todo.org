@@ -1,5 +1,3 @@
-* change memo to use cons for keys
-** only lookup if _cnd
 * add coro.lisp
 ** coroutines based on conditions & restarts
 * migrate tests from index to slist
