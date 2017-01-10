@@ -2,8 +2,7 @@
   (:export do-memoize make-memoize-context memoize memoize-clear
            with-memoize)
   (:shadowing-import-from cl4l-macro-utils with-gsyms)
-  (:shadowing-import-from cl4l-test define-test)
-  (:use cl))
+  (:use cl cl4l-test))
 
 (in-package cl4l-memoize)
 
