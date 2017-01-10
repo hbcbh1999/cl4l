@@ -1,4 +1,6 @@
 * change test to check if all run tags are in tags
+* try adding a memoize context to slist for use in slist-prev
+** compare slist perf with one context for entire test
 * add vicsy project
 ** implement resource / resource-calendar
 *** structs / indexes
