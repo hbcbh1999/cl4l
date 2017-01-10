@@ -27,7 +27,7 @@
          (index-rollback)))))
 
 (defstruct (idx) 
-  keys name recs)
+  recs)
 
 (defstruct (trans)
   add rem)
@@ -38,27 +38,12 @@
 (defun make-index-trans ()
   (make-trans))
 
-(defun index-key (self rec)
-  ;; Returns key for REC in SELF
-  (let ((keys (idx-keys self)))
-    (cond
-      ((null keys) rec)
-      ((atom keys) (funcall keys rec))
-      (t
-       (mapcar (lambda (fn)
-                 (if (null fn) rec (funcall fn rec)))
-               keys)))))
-
-(defun make-index (keys &key (name (gensym)) recs (uniq? t))
+(defun make-index (&key key recs (uniq? t))
   ;; Returns a new index
-  (let ((idx (make-idx :keys keys
-                       :name name
-                       :recs recs)))
+  (let ((idx (make-idx :recs recs)))
     (unless (idx-recs idx)
             (setf (idx-recs idx)
-                  (make-slist :key (lambda (rec)
-                                     (index-key idx rec))
-                              :uniq? uniq?)))
+                  (make-slist :key key :uniq? uniq?)))
     idx))
 
 (defun index-find (self key &key rec start)
@@ -78,8 +63,7 @@
 
 (defun index-clone (self)
   ;; Returns a clone of SELF
-  (make-index (idx-keys self)
-              :recs (slist-clone (idx-recs self))))
+  (make-index :recs (slist-clone (idx-recs self))))
 
 (defun trans-clear (self)
   (setf (trans-add self) nil
@@ -106,6 +90,10 @@
   ;; Removes all records from SELF that are not found in OTHER and
   ;; returns SELF.
   (slist-join (idx-recs self) (idx-recs other)))
+
+(defun index-key (self rec)
+  ;; Returns key for REC in SELF
+  (slist-key (idx-recs self) rec))
 
 (defun index-last (self)
   ;; Returns the last record from SELF

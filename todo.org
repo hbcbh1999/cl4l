@@ -1,6 +1,5 @@
-* backport composite keys from index to slist
-** migrate tests
-* back port trans from index to slist
+* migrate tests from index to slist
+* backport trans from index to slist
 ** migrate tests
 * update vicsy to use slists
 * move stored support / updates from vicsy to slist trans

@@ -40,10 +40,16 @@
 		:len (lst-len self)
                 :uniq? (lst-uniq? self))))
 
-(defun slist-key (self it)
-  ;; Returns the key for IT in SELF
+(defun slist-key (self IT)
+  ;; Returns key for IT in SELF
   (let ((key (lst-key self)))
-    (if key (funcall key it) it)))
+    (cond
+      ((null key) it)
+      ((atom key) (funcall key it))
+      (t
+       (mapcar (lambda (k)
+                 (if (null k) it (funcall k it)))
+               key)))))
 
 (defun (setf slist-key) (key self)
   ;; Sets KEY in SELF
