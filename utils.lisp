@@ -45,7 +45,7 @@
   `(let (,@(mapcar (lambda (v) `(,v (gensym))) vars))
      ,@body))
 
-(defmacro with-defer ((&optional name) &body body)
+(defmacro with-defer (name &body body)
   (let ((_name (or name (gensym))))
     `(macrolet ((,(symbol! 'defer- _name) (&body forms)
                   (let ((n ',_name))

@@ -13,7 +13,7 @@
 ;; Default context
 (defvar *context* (make-memoize-context))
 
-(defmacro do-memoize ((cnd key &optional context)
+(defmacro do-memoize ((cnd key &key context)
                       &body body)
   ;; Memoizes BODY for ARGS
   (with-symbols (_context _found _id _key)
