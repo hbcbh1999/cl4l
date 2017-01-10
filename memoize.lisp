@@ -6,9 +6,9 @@
 
 (in-package cl4l-memoize)
 
-(defun make-memoize-context (&key (test #'equal))
+(defun make-memoize-context ()
   ;; Returns new context
-  (make-hash-table :test test))
+  (make-hash-table :test #'equal))
 
 ;; Default context
 (defvar *context* (make-memoize-context))
@@ -24,10 +24,10 @@
            (setf (gethash ,_key ,_context)
                  (progn ,@body))))))
 
-(defmacro with-memoize ((&key context (test #'equal)) &body body)
+(defmacro with-memoize ((&key context) &body body)
   ;; Executes BODY in context
-  `(let (*context* (or ,context
-                       (make-memoize-context :test ,test)))
+  `(let ((*context* (or ,context
+                        (make-memoize-context))))
      ,@body))
 
 (defun memoize (fn)
@@ -53,14 +53,14 @@
     (fib fib-max)))
 
 (define-test (:memoize :fib :perf)
-  (memoize-clear)
-  (labels ((fib (n)
-             (do-memoize ((> n 10) n)
-               (case n
-                 (0 0)
-                 (1 1)
-                 (t (+ (fib (1- n)) (fib (- n 2))))))))
-    (fib fib-max)))
+  (with-memoize ()
+    (labels ((fib (n)
+               (do-memoize ((> n 10) n)
+                 (case n
+                   (0 0)
+                   (1 1)
+                   (t (+ (fib (1- n)) (fib (- n 2))))))))
+      (fib fib-max))))
 
 (define-test (:memoize :fn) ()
   (memoize-clear)
