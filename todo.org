@@ -1,7 +1,7 @@
+* add support for specifying test in memoize
 * copy trans support from index to slist
 ** forward from slist macros/fns
-* move stored support / updates from vicsy to index
-* add support for specifying test in memoize
+* move stored support / updates from vicsy to slist trans
 * add support for removing specific keys from memoize-context
 * optimize index usage of slist
 ** use prev instead of find and forward to add / rem
