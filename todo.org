@@ -1,8 +1,11 @@
-* fold index into slist
-** move support for composite keys from index to slist
-** move trans support from index to slist
-** update vicsy
+* backport composite keys from index to slist
+** migrate tests
+* back port trans from index to slist
+** migrate tests
+* update vicsy to use slists
 * move stored support / updates from vicsy to slist trans
+** move stored hash from db to trans/old
+*** update on add/rem
 * add support for removing specific keys from memoize-context
 * optimize index usage of slist
 ** use prev instead of find and forward to add / rem
