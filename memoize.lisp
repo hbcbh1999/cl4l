@@ -13,15 +13,15 @@
 ;; Default context
 (defvar *context* (make-memoize-context))
 
-(defmacro do-memoize ((cnd key &key context)
+(defmacro do-memoize ((&key context key (pred t))
                       &body body)
   ;; Memoizes BODY for ARGS
-  (with-symbols (_cnd _context _found? _id _key)
-    `(let* ((,_cnd ,cnd)
+  (with-symbols (_pred _context _found? _id _key)
+    `(let* ((,_pred ,pred)
             (,_context (or ,context *context*))
             (,_key (cons ',_id ,key))
-            (,_found? (and ,_cnd (gethash ,_key ,_context))))
-       (if ,_cnd
+            (,_found? (and ,_pred (gethash ,_key ,_context))))
+       (if ,_pred
            (or ,_found? (setf (gethash ,_key ,_context)
                               (progn ,@body)))
            (progn ,@body)))))
@@ -36,7 +36,7 @@
   ;; Returns memoized wrapper for FN
   (lambda (&rest args)
     (declare (sb-ext:muffle-conditions sb-ext:compiler-note))
-    (do-memoize (t args)
+    (do-memoize (:key args)
       (apply fn args))))
 
 (defun memoize-clear (&key (context *context*))
@@ -58,7 +58,7 @@
 (define-test (:memoize :fib :perf)
   (with-memoize ()
     (labels ((fib (n)
-               (do-memoize ((> n 10) n)
+               (do-memoize (:key n :pred (> n 10))
                  (case n
                    (0 0)
                    (1 1)
