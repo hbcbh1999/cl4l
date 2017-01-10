@@ -1,6 +1,9 @@
 * add skip-test/retry-test/retry-suite restarts to run-tests loop
 ** extract run-test method
 ** use restart-case
+* copy trans support from index to slist
+** forward from slist macros/fns
+* move stored support / updates from vicsy to index
 * add support for specifying test in memoize
 * add support for removing specific keys from memoize-context
 * optimize index usage of slist
