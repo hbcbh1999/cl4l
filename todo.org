@@ -1,2 +1,5 @@
+* add skip-test restart to run-tests loop
+** extract run-test method
+** use restart-case
 * optimize index usage of slist
 ** use prev instead of find and forward to add / rem
