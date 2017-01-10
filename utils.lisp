@@ -50,9 +50,9 @@
                 (defer (&body forms)
                   `(,(symbol! 'defer- ',_name) ,@forms)))
        (let ((,_name))
-         ,@body
-         (dolist (fn ,_name)
-           (funcall fn))))))
+         (unwind-protect (progn,@body)
+           (dolist (fn ,_name)
+             (funcall fn)))))))
 
 (defmacro do-hash-table ((tbl key val) &body body)
   (with-gsyms (_found _iter)
