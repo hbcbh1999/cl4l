@@ -14,7 +14,7 @@
 ;; Default trans
 (defvar *trans* nil)
 
-(defmacro with-index-trans ((&optional trans) &body body)
+(defmacro with-index-trans ((&key trans) &body body)
 ;; Executes BODY in transaction that is automatically
 ;; rolled back on early and committed on normal exit
   (with-symbols (_res)

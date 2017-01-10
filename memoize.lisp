@@ -6,9 +6,9 @@
 
 (in-package cl4l-memoize)
 
-(defun make-memoize-context ()
+(defun make-memoize-context (&key (test #'equal))
   ;; Returns new context
-  (make-hash-table :test #'equal))
+  (make-hash-table :test test))
 
 ;; Default context
 (defvar *context* (make-memoize-context))
@@ -24,9 +24,10 @@
            (setf (gethash ,_key ,_context)
                  (progn ,@body))))))
 
-(defmacro with-memoize ((&optional context) &body body)
+(defmacro with-memoize ((&key context (test #'equal)) &body body)
   ;; Executes BODY in context
-  `(let (*context* (or ,context (make-memoize-context)))
+  `(let (*context* (or ,context
+                       (make-memoize-context :test ,test)))
      ,@body))
 
 (defun memoize (fn)
