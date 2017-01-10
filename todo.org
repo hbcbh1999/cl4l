@@ -1,4 +1,8 @@
 * change test to check if all run tags are in tags
 * add vicsy project
+** implement resource / resource-calendar
+*** structs / indexes
+*** use uuid for rc id
+*** use ql:simple-date-time for times
 * optimize index usage of slist
 ** use prev instead of find and forward to add / rem
