@@ -1,6 +1,10 @@
+* change memo to use cons for keys
+** only lookup if _cnd
+* add coro.lisp
+** coroutines based on conditions & restarts
 * migrate tests from index to slist
 * backport trans from index to slist
-** migrate tests
+** migrate all tests
 * update vicsy to use slists
 * move stored support / updates from vicsy to slist trans
 ** move stored hash from db to trans/old
