@@ -132,7 +132,7 @@
       (slist-prev self key it :start start)
     (when found? (slist-del self prev))))
 
-(defun slist-match (self other &optional prev-match)
+(defun slist-match (self other &key prev-match)
   ;; Returns next matching items from (SELF . OTHER),
   ;; optionally starting from PREV-MATCH.
   (unless prev-match
@@ -162,7 +162,7 @@
   (do ((m nil)
        (first? t nil)
        (prev (lst-head self) (rest (first m)))) (nil)
-    (setf m (slist-match self other m))
+    (setf m (slist-match self other :prev-match m))
     
     (do ((it (second (first m))))
         ((eq it (second prev)) nil)
@@ -174,7 +174,7 @@
   ;; Removes all items from SELF that are found in OTHER and
   ;; returns SELF.
   (do ((m nil)) (nil)
-    (setf m (slist-match self other m))
+    (setf m (slist-match self other :prev-match m))
     (when m (slist-del self (first m)))
     (unless m (return self))))
 
@@ -185,7 +185,7 @@
        (first? t nil)
        (start (lst-head self) (rest (first m)))
        (prev (slist-first other) (rest (rest m)))) (nil)
-    (setf m (slist-match self other m))
+    (setf m (slist-match self other :prev-match m))
 
     (do ((it (first (rest m)))
          (pits prev (rest pits)))

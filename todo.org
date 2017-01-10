@@ -1,4 +1,4 @@
-* add support for specifying test in memoize
+* remove optional params
 * fold index into slist
 ** move support for composite keys from index to slist
 ** move trans support from index to slist

@@ -137,10 +137,11 @@
   ;; Returns length of SELF
   (slist-len (idx-recs self)))
 
-(defun index-match (self other &optional prev-match)
+(defun index-match (self other &key prev-match)
   ;; Returns next matching records from (SELF . OTHER),
   ;; optionally starting from PREV-MATCH.  
-  (slist-match (idx-recs self) (idx-recs other) prev-match))
+  (slist-match (idx-recs self) (idx-recs other)
+               :prev-match prev-match))
 
 (defun index-merge (self other)
   ;; Adds all records from OTHER that are not found in SELF and
