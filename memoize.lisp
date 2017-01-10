@@ -15,7 +15,7 @@
 
 (defmacro do-memoize ((&key context key (pred t))
                       &body body)
-  ;; Memoizes BODY for ARGS
+  ;; Memoizes BODY for optional KEY if PRED
   (with-symbols (_pred _context _found? _id _key)
     `(let* ((,_pred ,pred)
             (,_context (or ,context *context*))
