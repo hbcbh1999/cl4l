@@ -1,7 +1,7 @@
 (defpackage cl4l-memoize
   (:export do-memoize make-memoize-context memoize memoize-clear
            with-memoize)
-  (:shadowing-import-from cl4l-macro-utils with-gsyms)
+  (:shadowing-import-from cl4l-utils with-symbols)
   (:use cl cl4l-test))
 
 (in-package cl4l-memoize)
@@ -16,7 +16,7 @@
 (defmacro do-memoize ((cnd key &optional context)
                       &body body)
   ;; Memoizes BODY for ARGS
-  (with-gsyms (_context _found _id _key)
+  (with-symbols (_context _found _id _key)
     `(let* ((,_context (or ,context *context*))
             (,_key (list ',_id ,key))
             (,_found (gethash ,_key ,_context)))

@@ -4,7 +4,6 @@
   :license "MIT"
   :serial t
   :components ((:file "cl4l")
-               (:file "macro-utils")
                (:file "utils")
                (:file "slist")
                (:file "test")

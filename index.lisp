@@ -6,7 +6,7 @@
            index-rem index-rollback
            make-index make-index-trans
            with-index-trans)
-  (:shadowing-import-from cl4l-macro-utils with-gsyms)
+  (:shadowing-import-from cl4l-utils with-symbols)
   (:use cl cl4l-slist))
 
 (in-package cl4l-index)
@@ -17,7 +17,7 @@
 (defmacro with-index-trans ((&optional trans) &body body)
 ;; Executes BODY in transaction that is automatically
 ;; rolled back on early and committed on normal exit
-  (with-gsyms (_res)
+  (with-symbols (_res)
     `(let ((*trans* (or ,trans (make-index-trans))))
        (unwind-protect
             (progn
