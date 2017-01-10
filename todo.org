@@ -1,4 +1,2 @@
-* add unwind-protect to defer like with-index-trans
-** post
 * optimize index usage of slist
 ** use prev instead of find and forward to add / rem
