@@ -10,18 +10,6 @@
 (defmacro define-test ((&rest tags) &body body)
   `(test (list ,@tags) (lambda () ,@body)))
 
-(defmacro do-test ((warmup reps) &body body)
-  (with-gsyms (_real _run)
-    `(progn
-       (dotimes (_ ,warmup) ,@body)
-       (let ((,_real (get-internal-real-time))
-             (,_run (get-internal-run-time)))
-         (dotimes (_ ,reps) ,@body)
-         (cons (/ (- (get-internal-real-time) ,_real)
-                  internal-time-units-per-second)
-               (/ (- (get-internal-run-time) ,_run)
-                  internal-time-units-per-second))))))
-
 (defun test (tags fn &key (suite *suite*))
   (let ((found (slist-find suite tags nil)))
     (if found
@@ -35,13 +23,12 @@
   (:method (tags &key (warmup 0) (reps 1)
                       skip
                       (suite *suite*))
-
     (let ((tot-time 0))
       (dolist (test (slist-first suite))
         (let ((test-tags (first test))
               (test-fn (rest test)))
           (when (and (or (null tags)
-                         (intersection test-tags tags))
+                         (null (set-difference tags test-tags)))
                      (or (null skip)
                          (not (intersection test-tags skip))))
             (format t "testing ~30a" test-tags)
