@@ -1,7 +1,3 @@
-* add index fast path if key length is 1
-** check keys with consp
-** don't create lists for keys
-** (null keys) is identity
 * add unwind-protect to defer like with-index-trans
 * add *stored* & (stored? rec) to vicsy
 ** add clone method for records

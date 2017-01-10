@@ -40,9 +40,14 @@
 
 (defun index-key (self rec)
   ;; Returns key for REC in SELF
-  (mapcar (lambda (fn)
-            (if (eq fn t) rec (funcall fn rec)))
-          (idx-keys self)))
+  (let ((keys (idx-keys self)))
+    (cond
+      ((null keys) rec)
+      ((atom keys) (funcall keys rec))
+      (t
+       (mapcar (lambda (fn)
+                 (if (null fn) rec (funcall fn rec)))
+               keys)))))
 
 (defun make-index (keys &key (name (gensym)) recs (uniq? t))
   ;; Returns a new index

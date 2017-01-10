@@ -21,7 +21,7 @@
     (assert (eq rec2 (index-find idx (index-key idx rec2))))))
 
 (define-test (:index :clone)
-  (let ((idx (make-index (list t))))
+  (let ((idx (make-index nil)))
     (dotimes (i 10) (index-add idx i))
     (let ((clone (index-clone idx)))
       (dotimes (i 10) (assert (index-rem clone
@@ -30,7 +30,7 @@
     (assert (= 10 (index-len idx)))))
 
 (define-test (:index :str)
-  (let* ((idx (make-index (list #'length t)))
+  (let* ((idx (make-index (list #'length nil)))
          (rec1 (index-add idx "ab"))
          (rec2 (index-add idx "cd"))
          (rec3 (index-add idx "z"))
@@ -65,7 +65,7 @@
         (assert (eq rec (index-find idx key)))))))
 
 (define-test (:index :update)
-  (let* ((idx (make-index (list #'first)))
+  (let* ((idx (make-index #'first))
          (rec (index-add idx '(41))))
     (with-index-trans ()
       (index-add idx rec)
