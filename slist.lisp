@@ -5,7 +5,7 @@
            slist-key
            slist-last slist-len slist-match slist-merge
            slist-prev slist-rem)
-  (:import-from cl4l-utils compare)
+  (:shadowing-import-from cl4l-utils compare)
   (:use cl))
 
 (in-package cl4l-slist)

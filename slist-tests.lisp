@@ -1,6 +1,5 @@
 (defpackage cl4l-slist-tests
-  (:shadowing-import-from cl4l-test define-test run-suite)
-  (:use cl cl4l-slist))
+  (:use cl cl4l-slist cl4l-test))
 
 (in-package cl4l-slist-tests)
 

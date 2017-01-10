@@ -1,6 +1,5 @@
 (defpackage cl4l-utils-tests
-  (:import-from cl4l-test define-test)
-  (:use cl cl4l-utils))
+  (:use cl cl4l-test cl4l-utils))
 
 (in-package cl4l-utils-tests)
 

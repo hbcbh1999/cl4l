@@ -6,7 +6,7 @@
            index-rem index-rollback
            make-index make-index-trans
            with-index-trans)
-  (:import-from cl4l-macro-utils with-gsyms)
+  (:shadowing-import-from cl4l-macro-utils with-gsyms)
   (:use cl cl4l-slist))
 
 (in-package cl4l-index)

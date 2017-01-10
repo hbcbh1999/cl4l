@@ -1,6 +1,6 @@
 (defpackage cl4l-test
   (:export define-test run-suite run-test test untest)
-  (:import-from cl4l-macro-utils with-gsyms)
+  (:shadowing-import-from cl4l-macro-utils with-gsyms)
   (:use cl cl4l-slist))
 
 (in-package cl4l-test)

@@ -1,8 +1,8 @@
 (defpackage cl4l-memoize
   (:export do-memoize make-memoize-context memoize memoize-clear
            with-memoize)
-  (:import-from cl4l-macro-utils with-gsyms)
-  (:import-from cl4l-test define-test)
+  (:shadowing-import-from cl4l-macro-utils with-gsyms)
+  (:shadowing-import-from cl4l-test define-test)
   (:use cl))
 
 (in-package cl4l-memoize)

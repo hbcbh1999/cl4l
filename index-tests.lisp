@@ -1,6 +1,5 @@
 (defpackage cl4l-index-tests
-  (:import-from cl4l-test define-test)
-  (:use cl cl4l-index))
+  (:use cl cl4l-index cl4l-test))
 
 (in-package cl4l-index-tests)
 
