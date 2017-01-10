@@ -11,4 +11,5 @@
                (:file "index")
                (:file "memoize")
                (:file "index-tests")
-               (:file "slist-tests")))
+               (:file "slist-tests")
+               (:file "utils-tests")))
