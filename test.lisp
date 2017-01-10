@@ -1,5 +1,5 @@
 (defpackage cl4l-test
-  (:export define-test run-tests test untest)
+  (:export define-test run-suite run-test test untest)
   (:import-from cl4l-macro-utils with-gsyms)
   (:use cl cl4l-slist))
 
@@ -31,22 +31,34 @@
               (/ time internal-time-units-per-second))
       time)))
 
-(defgeneric run-tests (tags &key)  
+(defgeneric run-suite (tags &key)  
   (:method (tags &key (warmup 0) (reps 1)
                       skip
                       (suite *suite*))
-    (let ((tot-time 0))
-      (dolist (test (slist-first suite))
-        (let ((test-tags (first test))
-              (test-fn (rest test)))
-          (when (and (or (null tags)
-                         (null (set-difference tags test-tags)))
-                     (or (null skip)
-                         (not (intersection test-tags skip))))
-            
-            (incf tot-time
-                  (run-test test-tags test-fn
-                            :warmup warmup
-                            :reps reps)))))
-      (format t "TOTAL ~32a~5f~%" ""
-              (/ tot-time internal-time-units-per-second)))))
+    (tagbody
+     retry-suite
+       (let ((tot-time 0))
+         (dolist (test (slist-first suite))
+           (let ((test-tags (first test))
+                 (test-fn (rest test)))
+             (when (and (or (null tags)
+                            (null (set-difference tags test-tags)))
+                        (or (null skip)
+                            (not (intersection test-tags skip))))
+               (tagbody
+                retry-test
+                  (restart-case 
+                      (incf tot-time
+                            (run-test test-tags test-fn
+                                      :warmup warmup
+                                      :reps reps))
+                    (skip-test ()
+                      (format t " SKIP~%"))
+                    (retry-test ()
+                      (format t " TEST~%")
+                      (go retry-test))
+                    (retry-suite ()
+                      (format t "SUITE~%")
+                      (go retry-suite)))))))
+         (format t "TOTAL ~32a~5f~%" ""
+                 (/ tot-time internal-time-units-per-second))))))

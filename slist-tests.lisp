@@ -1,5 +1,5 @@
 (defpackage cl4l-slist-tests
-  (:import-from cl4l-test define-test run-tests)
+  (:shadowing-import-from cl4l-test define-test run-suite)
   (:use cl cl4l-slist))
 
 (in-package cl4l-slist-tests)
@@ -47,7 +47,7 @@
 (defparameter xs nil)
 (defparameter ys nil)
 
-(defmethod run-tests :around (run &key)
+(defmethod run-suite :around (run &key)
   (let* ((x (rnd-list))
          (y (rnd-list))
          (xs (apply #'slist nil x))
