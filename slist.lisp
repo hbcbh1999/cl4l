@@ -57,7 +57,7 @@
   ;; Returns the length of SELF
   (lst-len self))
 
-(defun slist-prev (self key it &key start)
+(defun slist-prev (self key &key it start)
   ;; Returns the previous item in SELF matching KEY/IT,
   ;; from START excl.
   (unless start (setf start (lst-head self)))
@@ -82,20 +82,20 @@
 
 (defun slist-first (self &key key it)
   ;; Returns all items in SELF, optionally from KEY/IT incl.
-  (rest (if key (slist-prev self key it) (lst-head self))))
+  (rest (if key (slist-prev self key :it it) (lst-head self))))
 
-(defun slist-find (self key it &key start)
+(defun slist-find (self key &key it start)
   ;; Returns item with KEY/IT in SELF, from START excl.;
   ;; or NIL if not found.
   (multiple-value-bind (prev found?) 
-      (slist-prev self key it :start start)
+      (slist-prev self key :it it :start start)
     (when found? (first (rest prev)))))
 
 (defun slist-pos (self key it &key start)
   ;; Returns the position of KEY/IT in SELF, from START excl.;
   ;; or NIL if not found.
   (multiple-value-bind (prev found? pos) 
-      (slist-prev self key it :start start)
+      (slist-prev self key :it it :start start)
     (declare (ignore prev))
     (when found? pos)))
 
@@ -111,7 +111,7 @@
                                start)
   ;; Adds IT to SELF after START and returns IT
   (multiple-value-bind (prev found?)
-      (slist-prev self key it :start start)
+      (slist-prev self key :it it :start start)
     (unless (and found?
                  (or (lst-uniq? self)
                      (eq it (second prev))))
@@ -129,7 +129,7 @@
 (defun slist-rem (self key it &key start)
   ;; Removes KEY/IT from SELF after START and returns item
   (multiple-value-bind (prev found?) 
-      (slist-prev self key it :start start)
+      (slist-prev self key :it it :start start)
     (when found? (slist-del self prev))))
 
 (defun slist-match (self other &key prev-match)
@@ -147,11 +147,13 @@
         (case cmp
           (-1 
            (setf prev-iit 
-                 (slist-prev self jkey (first jit)
+                 (slist-prev self jkey
+                             :it (first jit)
                              :start prev-iit))
            (setf iit (rest prev-iit)))
           (1 (setf jit 
-                   (rest (slist-prev other ikey (first iit) 
+                   (rest (slist-prev other ikey
+                                     :it (first iit) 
                                      :start jit))))
           (t
            (return (cons prev-iit jit))))))))

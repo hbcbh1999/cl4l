@@ -11,7 +11,7 @@
   `(test (list ,@tags) (lambda () ,@body)))
 
 (defun test (tags fn &key (suite *suite*))
-  (let ((found (slist-find suite tags nil)))
+  (let ((found (slist-find suite tags)))
     (if found
         (setf (rest found) fn)
         (slist-add suite (cons tags fn)))))

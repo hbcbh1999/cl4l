@@ -64,7 +64,7 @@
 (defun index-find (self key &key rec start)
   ;; Returns item with KEY/IT in SELF, from START excl.;
   ;; or NIL if not found.
-  (slist-find (idx-recs self) key rec :start start))
+  (slist-find (idx-recs self) key :it rec :start start))
 
 (defun index-add (self rec &key (key (index-key self rec))
                                 start
@@ -85,7 +85,7 @@
   (setf (trans-add self) nil
         (trans-rem self) nil))
 
-(defun index-commit (&optional (trans *trans*))
+(defun index-commit (&key (trans *trans*))
   ;; Clears changes made in TRANS
   (trans-clear trans))
 
@@ -119,7 +119,7 @@
             (trans-rem trans)))
     rec))
 
-(defun index-rollback (&optional (trans *trans*))
+(defun index-rollback (&key (trans *trans*))
   ;; Rolls back and clears changes made in TRANS
   (dolist (ch (nreverse (trans-add trans)))
     (index-rem (change-index ch) (change-key ch)
