@@ -1,5 +1,4 @@
-* add coro.lisp
-** coroutines based on conditions & restarts
+* model scheduler on top of coro
 * migrate tests from index to slist
 * backport trans from index to slist
 ** migrate all tests
