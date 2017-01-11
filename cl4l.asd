@@ -9,6 +9,7 @@
                (:file "test")
                (:file "index")
                (:file "memoize")
+               (:file "coro")
                (:file "index-tests")
                (:file "slist-tests")
                (:file "utils-tests")))

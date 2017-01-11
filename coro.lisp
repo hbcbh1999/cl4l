@@ -1,30 +1,32 @@
 (defpackage cl4l-coro
-  (:export cocall coresume coreturn)
+  (:export coro-do coro-resume coro-return)
   (:shadowing-import-from cl4l-utils with-symbols)
   (:use cl cl4l-test))
 
-(define-condition coreturn (condition)
+(in-package cl4l-coro)
+
+(define-condition coro-return (condition)
   ((result :initarg :result :reader result)))
 
-(defmacro coreturn (result)
+(defmacro coro-return (result)
   `(restart-case 
-       (error 'coreturn :result ,result)
-     (coresume ())))
+       (error 'coro-return :result ,result)
+     (coro-resume ())))
 
-(defmacro cocall ((var fn &rest args) &body body)
+(defmacro coro-do ((var expr) &body body)
   (with-symbols (_c)
-    `(handler-bind ((coreturn
+    `(handler-bind ((coro-return
                       #'(lambda (,_c)
-                          (let ((,var (result ,_c)))
-                            ,@body)
-                          (invoke-restart 'coresume))))
-       (funcall ,fn ,@args))))
+                        (let ((,var (result ,_c)))
+                          ,@body)
+                        (invoke-restart 'coro-resume))))
+       ,expr)))
 
 (define-test (:coro)
   (flet ((foo (max)
            (dotimes (i max)
-             (coreturn i))))
+             (coro-return i))))
     (let ((sum 0))
-      (cocall (i #'foo 10)
+      (coro-do (i (foo 10))
         (incf sum i))
       (assert (= 45 sum)))))
