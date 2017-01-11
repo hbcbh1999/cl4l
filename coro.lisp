@@ -16,7 +16,7 @@
 (defmacro coro-do ((var expr) &body body)
   (with-symbols (_c)
     `(handler-bind ((coro-return
-                      #'(lambda (,_c)
+                      (lambda (,_c)
                         (let ((,var (result ,_c)))
                           ,@body)
                         (invoke-restart 'coro-resume))))
