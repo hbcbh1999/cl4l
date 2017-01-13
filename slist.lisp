@@ -132,7 +132,7 @@
     (decf (lst-len self))
     it))
 
-(defun slist-rem (self key it &key start)
+(defun slist-rem (self key &key it start)
   ;; Removes KEY/IT from SELF after START and returns item
   (multiple-value-bind (prev found?) 
       (slist-prev self key :it it :start start)

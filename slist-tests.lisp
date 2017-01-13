@@ -3,6 +3,59 @@
 
 (in-package cl4l-slist-tests)
 
+(defstruct (rec)
+  foo bar baz)
+
+(define-test (:slist :rec)
+  (let* ((lst (slist (list #'rec-foo #'rec-bar)))
+         (rec1 (slist-add lst (make-rec :foo 1 :bar 2 :baz "ab")))
+         (rec2 (slist-add lst (make-rec :foo 2 :bar 3 :baz "bc")))
+         (rec3 (slist-add lst (make-rec :foo 3 :bar 4 :baz "cd"))))
+
+    ;; Make sure all records were added
+    (assert (and rec1 rec2 rec3))
+    (assert (= 3 (slist-len lst)))
+    
+    ;; Find by key
+    (assert (eq rec2 (slist-find lst (slist-key lst rec2))))))
+
+(define-test (:slist :clone)
+  (let ((lst (slist nil)))
+    (dotimes (i 10) (slist-add lst i))
+    (let ((clone (slist-clone lst)))
+      (dotimes (i 10) (assert (slist-rem clone
+                                         (slist-key clone i))))
+      (assert (zerop (slist-len clone))))
+    (assert (= 10 (slist-len lst)))))
+
+(define-test (:slist :multi)
+  (let ((lst (make-slist :key (list #'first #'second)
+                         :uniq? nil)))
+    (slist-add lst '(1 2 3))
+    (slist-add lst '(4 5 6))
+    
+    ;; Duplicate records are not allowed
+    (assert (null (slist-add lst '(1 2 3))))
+    
+    (let* ((rec '(1 2 4))
+           (key (slist-key lst rec)))
+      ;; But same key in different record is fine
+      (assert (slist-add lst rec))
+
+      ;; Records are sorted within the same key using
+      ;; the same generic #'COMPARE as keys
+      (let ((found (slist-first lst :key key)))
+        (assert (eq '(1 2 3) (first found)))
+        (assert (eq rec (second found)))
+        (assert (equal '(4 5 6) (third found))))
+
+      ;; The API supports optionally specifying record as well
+      ;; as key, default is first record matching key
+      (assert (eq rec (slist-find lst key :it rec)))
+      (slist-rem lst key :it rec)
+      (assert (null (slist-find lst key :it rec)))
+      (assert (equal '(1 2 3) (slist-find lst key))))))
+
 (define-test (:slist :match)
   (let* ((x (slist nil 1 2 3 4 5))
          (y (slist nil 3 5 6))

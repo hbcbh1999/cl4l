@@ -1,8 +1,7 @@
-* migrate tests from index to slist
 * backport trans from index to slist
 ** migrate all tests
 * update vicsy to use slists
-* remove index
+* remove index + tests
 * move stored support / updates from vicsy to slist trans
 ** move stored hash from db to trans/old
 *** update on add/rem

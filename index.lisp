@@ -101,7 +101,7 @@
 
 (defun index-rem (self key &key rec start (trans *trans*))
   ;; Removes KEY/REC from SELF after START and returns item
-  (let ((rec (slist-rem (idx-recs self) key rec :start start)))
+  (let ((rec (slist-rem (idx-recs self) key :it rec :start start)))
     (when (and rec trans)
       (push (make-change :index self :rec rec)
             (trans-rem trans)))
