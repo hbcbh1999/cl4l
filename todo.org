@@ -1,11 +1,9 @@
-* model scheduler on top of coro
 * migrate tests from index to slist
 * backport trans from index to slist
 ** migrate all tests
 * update vicsy to use slists
+* remove index
 * move stored support / updates from vicsy to slist trans
 ** move stored hash from db to trans/old
 *** update on add/rem
 * add support for removing specific keys from memoize-context
-* optimize index usage of slist
-** use prev instead of find and forward to add / rem
