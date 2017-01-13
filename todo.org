@@ -5,4 +5,3 @@
 * move stored support / updates from vicsy to slist trans
 ** move stored hash from db to trans/old
 *** update on add/rem
-* add support for removing specific keys from memoize-context
