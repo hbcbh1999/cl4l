@@ -56,6 +56,31 @@
       (assert (null (slist-find lst key :it rec)))
       (assert (equal '(1 2 3) (slist-find lst key))))))
 
+(define-test (:slist :trans)
+  (let ((lst (slist (list #'rec-foo #'rec-bar))))
+
+    ;; Start new transaction that is automatically
+    ;; rolled back on early and committed on
+    ;; normal exit
+    (with-slist-trans ()
+      (let* ((rec (make-rec :foo 1 :bar 2 :baz "ab"))
+             (key (slist-key lst rec)))
+        (slist-add lst rec)
+
+        ;; Rollback and make sure record is gone
+        (slist-rollback)
+        (assert (= 0 (slist-len lst)))
+        (assert (null (slist-find lst key)))
+
+        ;; Add again, commit and remove
+        (slist-add lst rec)
+        (slist-commit)
+        (slist-rem lst key)
+
+        ;; Rollback and make sure record is still there
+        (slist-rollback)
+        (assert (eq rec (slist-find lst key)))))))
+
 (define-test (:slist :match)
   (let* ((x (slist nil 1 2 3 4 5))
          (y (slist nil 3 5 6))

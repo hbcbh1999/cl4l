@@ -1,17 +1,39 @@
 (defpackage cl4l-slist
-  (:export make-slist
-           slist slist-add slist-clone slist-del
+  (:export make-slist make-slist-trans
+           slist slist-add slist-clone slist-commit slist-del
            slist-diff slist-find slist-first slist-ins slist-join
            slist-key
            slist-last slist-len slist-match slist-merge
-           slist-prev slist-rem)
-  (:shadowing-import-from cl4l-utils compare)
+           slist-prev slist-rem slist-rollback
+           with-slist-trans)
+  (:shadowing-import-from cl4l-utils compare with-symbols)
   (:use cl))
 
 (in-package cl4l-slist)
 
+;; Default trans
+(defvar *trans* nil)
+
+(defmacro with-slist-trans ((&key trans) &body body)
+  ;; Executes BODY in transaction that is automatically
+  ;; rolled back on early and committed on normal exit
+  (with-symbols (_res)
+    `(let ((*trans* (or ,trans (make-slist-trans))))
+       (unwind-protect
+            (progn
+              (let ((,_res (progn ,@body)))
+                (slist-commit)
+                ,_res))
+         (slist-rollback)))))
+
 (defstruct (lst) 
   head key (len 0) tail (uniq? t))
+
+(defstruct (tr)
+  add rem)
+
+(defstruct (ch)
+  slist key it)
 
 (defun make-slist (&rest args)
   ;; Returns a new slist from ARGS
@@ -21,6 +43,9 @@
     (unless (lst-tail lst)
       (setf (lst-tail lst) (last (lst-head lst))))
     lst))
+
+(defun make-slist-trans ()
+  (make-tr))
 
 (defun slist (key &rest its)
   ;; Returns a new slist with KEY, initialized from ITS
@@ -114,13 +139,17 @@
     it))
 
 (defun slist-add (self it &key (key (slist-key self it))
-                               start)
+                               start
+                               (trans *trans*))
   ;; Adds IT to SELF after START and returns IT
   (multiple-value-bind (prev found?)
       (slist-prev self key :it it :start start)
     (unless (and found?
                  (or (lst-uniq? self)
                      (eq it (second prev))))
+      (when trans
+        (push (make-ch :slist self :key key :it it)
+              (tr-add trans)))   
       (slist-ins self prev it))))
 
 (defun slist-del (self prev)
@@ -132,11 +161,15 @@
     (decf (lst-len self))
     it))
 
-(defun slist-rem (self key &key it start)
+(defun slist-rem (self key &key it start (trans *trans*))
   ;; Removes KEY/IT from SELF after START and returns item
   (multiple-value-bind (prev found?) 
       (slist-prev self key :it it :start start)
-    (when found? (slist-del self prev))))
+    (when found?
+      (when trans
+        (push (make-ch :slist self :key key :it (second prev))
+              (tr-rem trans)))
+      (slist-del self prev))))
 
 (defun slist-match (self other &key prev-match)
   ;; Returns next matching items from (SELF . OTHER),
@@ -203,6 +236,28 @@
       (setf start (rest start)))
 
     (unless m (return self))))
+
+(defun slist-trans-reset (self)
+  (setf (tr-add self) nil
+        (tr-rem self) nil))
+
+(defun slist-commit (&key (trans *trans*))
+  ;; Clears changes made in TRANS
+  (slist-trans-reset trans))
+
+(defun slist-rollback (&key (trans *trans*))
+  ;; Rolls back and clears changes made in TRANS
+  (dolist (ch (nreverse (tr-add trans)))
+    (slist-rem (ch-slist ch) (ch-key ch)
+               :it (ch-it ch)
+               :trans nil))
+
+  (dolist (ch (nreverse (tr-rem trans)))
+    (slist-add (ch-slist ch) (ch-it ch)
+               :key (ch-key ch)
+               :trans nil))
+
+  (slist-trans-reset trans))
 
 (defmethod compare ((x lst) y)
   (compare (slist-first x) (slist-first y)))
