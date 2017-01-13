@@ -8,13 +8,13 @@ cl4l is a set of Common Lisp utilities designed for maximum leverage.
 The project supports asdf and may be loaded by calling ```(ql:quickload "cl4l")``` once cl4l.asd is in the asdf search path. Call ```(cl4l-test:run-tests nil)``` to run tests.
 
 ### memoization
-```memoize.lisp``` implements support for general purpose memoization  computations.
+```memoize.lisp``` implements support for general purpose memoization of arbitrary, potentially parameterized expressions.
 
 ### ordered sets
-```slist.lisp``` implements ordered, optionally unique sets based on lists.
+```slist.lisp``` implements ordered, optionally composite key/transacted/unique sets based on lists.
 
 ### tests
-```test.lisp``` implements a testing framework based on the idea of using tags to group and trigger tests dynamically.
+```test.lisp``` implements a test framework based on the idea of using tags to group and trigger tests dynamically.
 
 ### license
 MIT
