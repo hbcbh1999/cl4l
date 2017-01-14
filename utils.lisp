@@ -82,7 +82,8 @@
   (cond
     ((null key) (lambda (it) it))
     ((atom key) (lambda (it) (funcall key it)))
-    ((eq 'list (type-of key))
+    ((and (consp key)
+          (consp (rest key)))
      (lambda (it)
        (mapcar (lambda (k)
                  (if (null k) it (funcall k it)))
@@ -90,7 +91,7 @@
     ((consp key)
      (lambda (it)
        (cons (funcall (first key) it)
-             (funcall (second key) it))))))
+             (funcall (rest key) it))))))
 
 (defmacro let-when ((var expr cnd) &body body)
   `(let ((,var ,expr))

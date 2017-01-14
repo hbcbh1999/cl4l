@@ -7,7 +7,7 @@
   foo bar baz)
 
 (define-test (:index :rec)
-  (let* ((lst (index (list #'rec-foo #'rec-bar)))
+  (let* ((lst (index (cons #'rec-foo #'rec-bar)))
          (rec1 (index-add lst (make-rec :foo 1 :bar 2 :baz "ab")))
          (rec2 (index-add lst (make-rec :foo 2 :bar 3 :baz "bc")))
          (rec3 (index-add lst (make-rec :foo 3 :bar 4 :baz "cd"))))
@@ -29,7 +29,7 @@
     (assert (= 10 (index-length lst)))))
 
 (define-test (:index :multi)
-  (let ((lst (make-index :key (list #'first #'second)
+  (let ((lst (make-index :key (cons #'first #'second)
                          :unique? nil)))
     (index-add lst '(1 2 3))
     (index-add lst '(4 5 6))
@@ -57,7 +57,7 @@
       (assert (equal '(1 2 3) (index-find lst key))))))
 
 (define-test (:index :trans)
-  (let ((lst (index (list #'rec-foo #'rec-bar))))
+  (let ((lst (index (cons #'rec-foo #'rec-bar))))
 
     ;; Start new transaction that is automatically
     ;; rolled back on early and committed on
