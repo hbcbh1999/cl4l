@@ -3,13 +3,21 @@
 * add perf comparison between returning list, iter struct and coro
 ** post?
 * rename it to rec in index.lisp
+* generalize (table-index) to (table-depend self on)
+** support both tables & indexes
+* add (index-depend self on)
+
 * add support for index streams like table
 * change table idxs to use table key as rec
 * add fifo + channel
 ** base on fifo + semaphore
 *** thread library? bordeaux?
+* add tag based logging
 * add db.lisp
 ** multi threaded
 ** msg based
 ** add optional :db params to table & index
 *** send changes on commit
+** add db-context for each connection
+*** add db-context-log / unlog for turning logging on/off
+**** keep track in separate db thread
