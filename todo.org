@@ -1,5 +1,9 @@
+* rename coro to iter
+** add optional name param like defer
+** add macrolet iter-next as alias for name-next
+** rename do-coro to with-iter
+** add perf comparison between returning nreverse list and iter
 * add optional result to do-hash-table
-* add perf comparison between returning list, iter struct and coro
 * rename it to rec & item to record in index.lisp
 * add table & index events
 * generalize (table-index) to (table-(un)depend self on)
@@ -9,8 +13,7 @@
 * add support for index streams like table
 * change table idxs to use table key as rec
 * add fifo + channel
-** base on fifo + semaphore
-*** thread library? bordeaux?
+** base on sbcl fifo + atomic/semaphore
 * add tag based logging
 * add db.lisp
 ** multi threaded
