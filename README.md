@@ -11,7 +11,7 @@ Welcome to cl4l. The project supports asdf and may be loaded by calling ```(ql:q
 ```coro.lisp``` implements poor man's coroutines using conditions and restarts.
 
 ### indexes
-```index.lisp``` implements ordered, optionally composite key/transacted/unique indexes.
+```index.lisp``` implements ordered, optionally composite key/transacted/unique indexes that offer significantly (currently hovering above 10x, but there should be plenty of low hanging fruit left) better performance for set operations.
 
 ### tables
 ```table.lisp``` implements optionally composite key/transacted tables with index-/update and i/o support.

@@ -3,4 +3,4 @@
 * rename it to rec in index.lisp
 * add support for index streams like table
 * change table idxs to use table key as rec
-
+* add set operations for tables like indexes
