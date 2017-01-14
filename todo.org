@@ -1,7 +1,8 @@
+* add (table-dump self &key stream)
+* add set operations for tables like indexes
+** add perf comparison between table and index
 * add perf comparison between returning list, iter struct and coro
 ** post?
 * rename it to rec in index.lisp
 * add support for index streams like table
 * change table idxs to use table key as rec
-* add set operations for tables like indexes
-** add perf comparison between table and index
