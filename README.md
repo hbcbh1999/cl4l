@@ -8,7 +8,7 @@ cl4l is a set of Common Lisp utilities designed for maximum leverage.
 The project supports asdf and may be loaded by calling ```(ql:quickload "cl4l")``` once cl4l.asd is in the asdf search path. Call ```(cl4l-test:run-tests nil)``` to run tests.
 
 ### memoization
-```memoize.lisp``` implements support for general purpose memoization of arbitrary, potentially parameterized expressions.
+```memoize.lisp``` implements general purpose memoization of arbitrary, potentially parameterized expressions.
 
 ### coroutines
 ```coro.lisp``` implements poor man's coroutines using conditions and restarts.
