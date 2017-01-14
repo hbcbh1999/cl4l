@@ -6,3 +6,11 @@
 * rename it to rec in index.lisp
 * add support for index streams like table
 * change table idxs to use table key as rec
+* add fifo + channel
+** base on fifo + semaphore
+*** thread library? bordeaux?
+* add db.lisp
+** multi threaded
+** msg based
+** add optional :db params to table & index
+*** send changes on commit

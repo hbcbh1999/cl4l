@@ -1,11 +1,13 @@
 (defpackage cl4l-table
   (:export clone-record
            make-table make-table-trans
-           table table-commit table-delete table-find
+           table table-commit table-delete table-dump table-find
            table-index table-key
-           table-length table-prev? table-rollback table-upsert
+           table-length table-prev? table-rollback table-slurp
+           table-upsert
            with-table-trans *table-trans*)
-  (:shadowing-import-from cl4l-utils compare key-gen when-let
+  (:shadowing-import-from cl4l-utils compare do-hash-table
+                          key-gen when-let
                           with-symbols)
   (:use cl cl4l-index cl4l-test))
 
@@ -42,7 +44,7 @@
             :stream stream))
 
 (defun table (key &rest recs)
-  ;; Returns a new table with KEY from RECS
+  ;; Returns a new table with KEY, populated from RECS
   (let ((tbl (make-table :key key)))
     (dolist (rec recs tbl)
       (table-upsert tbl rec))))
@@ -146,6 +148,10 @@
 
     (table-trans-reset trans)))
 
+(defun table-dump (self &key (stream (tbl-stream self)))
+  (do-hash-table ((tbl-prev self) _ prev)
+    (write-op :upsert prev stream)))
+
 (defun table-slurp (self &key (stream (tbl-stream self)))
   (tagbody
    next
@@ -174,7 +180,23 @@
         (table-upsert tbl rec)
         (table-delete tbl rec))
       (table-clear tbl)
-      (with-input-from-string (in (get-output-stream-string out))
-        (table-slurp tbl :stream in))
-      (assert (equal '(1 3 4) (table-find tbl 1)))
-      (assert (null (table-find tbl 2))))))
+      (let ((data (get-output-stream-string out)))
+        (with-input-from-string (in data)
+          (table-slurp tbl :stream in))
+        (assert (equal '(1 3 4) (table-find tbl 1)))
+        (assert (null (table-find tbl 2)))))))
+
+(define-test (:table :dump)
+    (let ((tbl (make-table :key #'first)))
+      (table-upsert tbl '(1 2 3))
+      (table-upsert tbl '(1 3 4))
+      (let ((rec '(2 3 4)))
+        (table-upsert tbl rec)
+        (table-delete tbl rec))
+      (let ((data (with-output-to-string (out)
+                    (table-dump tbl :stream out))))
+        (table-clear tbl)
+        (with-input-from-string (in data)
+          (table-slurp tbl :stream in))
+        (assert (equal '(1 3 4) (table-find tbl 1)))
+        (assert (null (table-find tbl 2))))))
