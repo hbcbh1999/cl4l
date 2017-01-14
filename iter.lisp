@@ -12,6 +12,8 @@
      (iter-next ())))
 
 (defmacro with-iter (name expr &body body)
+  ;; Executes BODY with EXPR bound to optional NAME,
+  ;; hard coded synonyms are provided for anonymous use.
   (with-symbols (_c)
     (let* ((_name (or name (gensym)))
            (_result (symbol! _name '-result)))
