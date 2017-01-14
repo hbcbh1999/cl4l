@@ -51,9 +51,9 @@
 
       ;; The API supports optionally specifying record as well
       ;; as key, default is first record matching key
-      (assert (eq rec (index-find lst key :it rec)))
-      (index-remove lst key :it rec)
-      (assert (null (index-find lst key :it rec)))
+      (assert (eq rec (index-find lst key :rec rec)))
+      (index-remove lst key :rec rec)
+      (assert (null (index-find lst key :rec rec)))
       (assert (equal '(1 2 3) (index-find lst key))))))
 
 (define-test (:index :trans)

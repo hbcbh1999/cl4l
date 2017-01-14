@@ -30,7 +30,7 @@
   head key-gen (length 0) tail (unique? t))
 
 (defstruct (ch)
-  op index key it)
+  op index key rec)
 
 (defun make-index (&key key
                         key-gen
@@ -48,21 +48,21 @@
 (defun make-index-trans ()
   (list nil))
 
-(defun index (key &rest its)
-  ;; Returns a new index with KEY, initialized from ITS
-  (let ((sits (and its (stable-sort its 
+(defun index (key &rest recs)
+  ;; Returns a new index with KEY, initialized from RECS
+  (let ((srecs (and recs (stable-sort recs 
                                     (lambda (x y) 
                                       (= (compare x y) -1)) 
                                     :key key))))
     (make-index :key key
-                :head (cons nil sits) 
-                :length (length sits))))
+                :head (cons nil srecs) 
+                :length (length srecs))))
 
 (defun index-clone (self)
   ;; Returns clone of SELF
-  (let ((its (copy-list (idx-head self))))
+  (let ((recs (copy-list (idx-head self))))
     (make-index :key-gen (idx-key-gen self) 
-		:head its 
+		:head recs 
 		:length (idx-length self)
                 :unique? (idx-unique? self))))
 
@@ -75,125 +75,125 @@
   (setf (idx-key-gen self) (key-gen key)))
 
 (defun index-last (self)
-  ;; Returns the last item from SELF
+  ;; Returns the last record from SELF
   (idx-tail self))
 
 (defun index-length (self)
   ;; Returns the length of SELF
   (idx-length self))
 
-(defun index-prev (self key &key it start)
-  ;; Returns the previous item in SELF matching KEY/IT,
+(defun index-prev (self key &key rec start)
+  ;; Returns the previous record in SELF matching KEY/REC,
   ;; from START excl.
   (unless start (setf start (idx-head self)))
   (if (null (rest start))
       (values start nil 0)
-      (let* ((lit (idx-tail self))
-	     (lit-cmp (compare key 
-                               (index-key self (first lit)))))
-	(if  (> lit-cmp 0)
-	     (values lit (zerop lit-cmp) (idx-length self))
-	     (do ((its start (rest its))
+      (let* ((lrec (idx-tail self))
+	     (lrec-cmp (compare key 
+                               (index-key self (first lrec)))))
+	(if  (> lrec-cmp 0)
+	     (values lrec (zerop lrec-cmp) (idx-length self))
+	     (do ((recs start (rest recs))
 		  (pos 0 (1+ pos)))
-		 ((null (rest its)) 
+		 ((null (rest recs)) 
 		  (values (idx-tail self) nil pos))
 	       (let ((cmp (compare key 
                                    (index-key 
-                                    self (second its)))))
+                                    self (second recs)))))
                  (when (and (zerop cmp)
                             (not (idx-unique? self))
-                            it)
-                   (setf cmp (compare it (second its))))
+                            rec)
+                   (setf cmp (compare rec (second recs))))
 		 (when (< cmp 1)
-		   (return (values its (zerop cmp) pos)))))))))
+		   (return (values recs (zerop cmp) pos)))))))))
 
-(defun index-first (self &key key it)
-  ;; Returns all items in SELF, optionally from KEY/IT incl.
-  (rest (if key (index-prev self key :it it) (idx-head self))))
+(defun index-first (self &key key rec)
+  ;; Returns all records in SELF, optionally from KEY/REC incl.
+  (rest (if key (index-prev self key :rec rec) (idx-head self))))
 
-(defun index-find (self key &key it start)
-  ;; Returns item with KEY/IT in SELF, from START excl.;
+(defun index-find (self key &key rec start)
+  ;; Returns record with KEY/REC in SELF, from START excl.;
   ;; or NIL if not found.
   (multiple-value-bind (prev found?) 
-      (index-prev self key :it it :start start)
+      (index-prev self key :rec rec :start start)
     (when found? (first (rest prev)))))
 
-(defun index-pos (self key it &key start)
-  ;; Returns the position of KEY/IT in SELF, from START excl.;
+(defun index-pos (self key rec &key start)
+  ;; Returns the position of KEY/REC in SELF, from START excl.;
   ;; or NIL if not found.
   (multiple-value-bind (prev found? pos) 
-      (index-prev self key :it it :start start)
+      (index-prev self key :rec rec :start start)
     (declare (ignore prev))
     (when found? pos)))
 
-(defun index-insert (self prev it)
-  ;; Inserts IT after PREV in SELF and returns IT
-  (let* ((its (push it (rest prev))))
+(defun index-insert (self prev rec)
+  ;; Inserts REC after PREV in SELF and returns REC
+  (let* ((recs (push rec (rest prev))))
     (when (eq prev (idx-tail self))
-      (setf (idx-tail self) its))
+      (setf (idx-tail self) recs))
     (incf (idx-length self))
-    it))
+    rec))
 
-(defun index-add (self it &key (key (index-key self it))
+(defun index-add (self rec &key (key (index-key self rec))
                                start
                                (trans *index-trans*))
-  ;; Adds IT to SELF after START and returns IT
+  ;; Adds REC to SELF after START and returns REC
   (multiple-value-bind (prev found?)
-      (index-prev self key :it it :start start)
+      (index-prev self key :rec rec :start start)
     (unless (and found?
                  (or (idx-unique? self)
-                     (eq it (second prev))))
+                     (eq rec (second prev))))
       (when trans
-        (push (make-ch :op :add :index self :key key :it it)
+        (push (make-ch :op :add :index self :key key :rec rec)
               (rest trans)))   
-      (index-insert self prev it))))
+      (index-insert self prev rec))))
 
 (defun index-delete (self prev)
-  ;; Deletes item after PREV from SELF returns it
+  ;; Deletes record after PREV from SELF returns it
   (when (eq (rest prev) (idx-tail self))
     (setf (idx-tail self) prev))
-  (let ((it (second prev)))
+  (let ((rec (second prev)))
     (pop (rest prev))
     (decf (idx-length self))
-    it))
+    rec))
 
-(defun index-remove (self key &key it start (trans *index-trans*))
-  ;; Removes KEY/IT from SELF after START and returns item
+(defun index-remove (self key &key rec start (trans *index-trans*))
+  ;; Removes KEY/REC from SELF after START and returns prev
   (multiple-value-bind (prev found?) 
-      (index-prev self key :it it :start start)
+      (index-prev self key :rec rec :start start)
     (when found?
       (when trans
         (push (make-ch :op :remove
                        :index self
-                       :key key :it (second prev))
+                       :key key :rec (second prev))
               (rest trans)))
       (index-delete self prev))))
 
 (defun index-match (self other &key prev-match)
-  ;; Returns next matching items from (SELF . OTHER),
+  ;; Returns next matching records from (SELF . OTHER),
   ;; optionally starting from PREV-MATCH.
   (unless prev-match
     (setf prev-match (cons (idx-head self) (idx-head other))))
-  (let* ((start (first prev-match)) (prev-iit start))
-    (do ((iit (rest start)) 
-         (jit (rest (rest prev-match))))
-        ((or (null iit) (null jit)) nil)
-      (let* ((ikey (index-key self (first iit)))
-             (jkey (index-key self (first jit)))
+  (let* ((start (first prev-match)) (prev-irec start))
+    (do ((irec (rest start)) 
+         (jrec (rest (rest prev-match))))
+        ((or (null irec) (null jrec)) nil)
+      (let* ((ikey (index-key self (first irec)))
+             (jkey (index-key self (first jrec)))
              (cmp (compare ikey jkey)))
         (case cmp
           (-1 
-           (setf prev-iit 
+           (setf prev-irec 
                  (index-prev self jkey
-                             :it (first jit)
-                             :start prev-iit))
-           (setf iit (rest prev-iit)))
-          (1 (setf jit 
+                             :rec (first jrec)
+                             :start prev-irec))
+           (setf irec (rest prev-irec)))
+          (1 (setf jrec 
                    (rest (index-prev other ikey
-                                     :it (first iit) 
-                                     :start jit))))
+                                     :rec (first irec) 
+                                     :start jrec))))
           (t
-           (return (cons prev-iit jit))))))))
+           (return (cons prev-irec jrec))))))))
 
 (defun index-join (self other)
   ;; Removes all records from SELF that are not found in OTHER and
@@ -203,8 +203,8 @@
        (prev (idx-head self) (rest (first m)))) (nil)
     (setf m (index-match self other :prev-match m))
     
-    (do ((it (second (first m))))
-        ((eq it (second prev)) nil)
+    (do ((rec (second (first m))))
+        ((eq rec (second prev)) nil)
       (index-delete self prev))
     
     (unless m (return self))))
@@ -226,11 +226,11 @@
        (prev (index-first other) (rest (rest m)))) (nil)
     (setf m (index-match self other :prev-match m))
 
-    (do ((it (first (rest m)))
-         (pits prev (rest pits)))
-        ((or (null pits)
-             (eq it (first pits))))
-      (index-insert self start (first pits))
+    (do ((rec (first (rest m)))
+         (precs prev (rest precs)))
+        ((or (null precs)
+             (eq rec (first precs))))
+      (index-insert self start (first precs))
       (setf start (rest start)))
 
     (unless m (return self))))
@@ -250,10 +250,10 @@
       (ecase (ch-op ch)
         (:add
          (index-remove (ch-index ch) (ch-key ch)
-                       :it (ch-it ch)
+                       :rec (ch-rec ch)
                        :trans nil))
         (:remove
-         (index-add (ch-index ch) (ch-it ch)
+         (index-add (ch-index ch) (ch-rec ch)
                     :key (ch-key ch)
                     :trans nil))))
     (index-trans-reset trans)))

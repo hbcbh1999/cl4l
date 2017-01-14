@@ -4,8 +4,8 @@
 ** rename do-coro to with-iter
 ** add perf comparison between returning nreverse list and iter
 * add optional result to do-hash-table
-* rename it to rec & item to record in index.lisp
 * add table & index events
+** event.lisp
 * generalize (table-index) to (table-(un)depend self on)
 ** support both tables & indexes
 ** hook into events
