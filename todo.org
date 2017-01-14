@@ -1,12 +1,6 @@
-* expand when-let to allow several exprs like let
-** update table.lisp
 * add optional result to do-hash-table
 * add perf comparison between returning list, iter struct and coro
-** post?
 * rename it to rec & item to record in index.lisp
-* investigate using memoize for implementing table
-** externalize key instead of gensym (&key)
-** same context for both tables
 * add table & index events
 * generalize (table-index) to (table-(un)depend self on)
 ** support both tables & indexes
