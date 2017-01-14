@@ -1,4 +1,3 @@
-* add (table-dump self &key stream)
 * add set operations for tables like indexes
 ** add perf comparison between table and index
 * add perf comparison between returning list, iter struct and coro

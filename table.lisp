@@ -3,8 +3,8 @@
            make-table make-table-trans
            table table-commit table-delete table-dump table-find
            table-index table-key
-           table-length table-prev? table-rollback table-slurp
-           table-upsert
+           table-length table-prev? table-read table-rollback
+           table-slurp table-upsert table-write
            with-table-trans *table-trans*)
   (:shadowing-import-from cl4l-utils compare do-hash-table
                           key-gen when-let
@@ -55,7 +55,7 @@
 (defun table-trans-reset (self)
   (rplacd self nil))
 
-(defun write-op (op rec stream)
+(defun table-write (self op rec &key (stream (tbl-stream self)))
   (write (cons op rec) :stream stream)
   (terpri stream))
 
@@ -68,7 +68,10 @@
   (when trans
     (dolist (ch (nreverse (rest trans)))
       (when-let (stream (tbl-stream (ch-tbl ch)))
-        (write-op (ch-op ch) (ch-prev ch) stream)))
+        (table-write (ch-tbl ch)
+                     (ch-op ch)
+                     (ch-prev ch)
+                     :stream stream)))
     (table-trans-reset trans)))
 
 (defun table-index (self idx)
@@ -96,7 +99,7 @@
                      :prev prev)
             (rest  trans))
       (when-let (stream (tbl-stream self))
-        (write-op :upsert (or prev rec) stream)))
+        (table-write self :upsert (or prev rec) :stream stream)))
     
     (when (tbl-idxs self)
       (let ((prev (gethash rec (tbl-prev self))))
@@ -120,7 +123,7 @@
                          :prev prev)
                 (rest trans))
           (when-let (stream (tbl-stream self))
-            (write-op :delete prev stream)))
+            (table-write self :delete prev :stream stream)))
         
         (when (tbl-idxs self)
           (let ()
@@ -150,22 +153,26 @@
 
 (defun table-dump (self &key (stream (tbl-stream self)))
   (do-hash-table ((tbl-prev self) _ prev)
-    (write-op :upsert prev stream)))
+    (table-write self :upsert prev :stream stream)))
+
+(defun table-read (self &key (stream (tbl-stream self)))
+  (when-let (ln (read-line stream nil))
+    (let ((form (read-from-string ln)))
+      (ecase (first form)
+        (:upsert
+         (table-upsert self (rest form)))
+        (:delete
+         (table-delete self
+                       (table-find self
+                                   (table-key self
+                                              (rest form)))))))
+    t))
 
 (defun table-slurp (self &key (stream (tbl-stream self)))
   (tagbody
    next
-     (when-let (ln (read-line stream nil))
-       (let ((form (read-from-string ln)))
-         (ecase (first form)
-           (:upsert
-            (table-upsert self (rest form)))
-           (:delete
-            (table-delete self
-                          (table-find self
-                                      (table-key self
-                                                 (rest form))))))
-         (go next)))))
+     (when (table-read self :stream stream)
+       (go next))))
 
 (defgeneric clone-record (self)
   (:method ((self list))
