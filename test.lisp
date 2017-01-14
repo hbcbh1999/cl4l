@@ -5,7 +5,7 @@
 
 (in-package cl4l-test)
 
-(defparameter *suite* (index #'first))
+(defvar *suite* (index #'first))
 
 (defmacro define-test ((&rest tags) &body body)
   `(test (list ,@tags) (lambda () ,@body)))

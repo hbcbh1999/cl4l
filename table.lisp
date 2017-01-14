@@ -1,11 +1,12 @@
 (defpackage cl4l-table
   (:export clone-record
            make-table make-table-trans
-           table table-commit table-delete table-find table-key
+           table table-commit table-delete table-find
+           table-index table-key
            table-length table-prev? table-rollback table-upsert
            with-table-trans *table-trans*)
   (:shadowing-import-from cl4l-utils compare key-gen with-symbols)
-  (:use cl))
+  (:use cl cl4l-index))
 
 (in-package cl4l-table)
 
@@ -25,6 +26,7 @@
          (table-rollback)))))
 
 (defstruct (tbl)
+  idxs
   key-gen
   recs
   (prev (make-hash-table :test #'eq)))
@@ -53,6 +55,10 @@
   (when trans
     (table-trans-reset trans)))
 
+(defun table-index (self idx)
+  (setf (tbl-idxs self) (adjoin idx (tbl-idxs self)))
+  idx)
+
 (defun table-find (self key)
   ;; Returns record with KEY from SELF,
   ;; or NIL if not found.
@@ -72,19 +78,34 @@
                      :rec rec
                      :prev (gethash key (tbl-recs self)))
             (rest  trans)))
+    (when (tbl-idxs self)
+      (let ((prev (gethash rec (tbl-prev self))))
+        (dolist (idx (tbl-idxs self))
+          (when prev
+            (index-remove idx (index-key idx prev)))
+          (index-add idx rec))))
   (setf (gethash key (tbl-recs self)) rec)
   (setf (gethash rec (tbl-prev self)) (clone-record rec))))
 
 (defun table-delete (self rec &key (trans *table-trans*))
-  (let ((key (table-key self rec)))
-    (when trans
-      (push (make-ch :op 'delete
-                     :tbl self
-                     :rec rec
-                     :prev (gethash key (tbl-recs self)))
-            (rest trans)))
-    (remhash key (tbl-recs self))
-    (remhash rec (tbl-prev self))))
+  (let ((prev (gethash rec (tbl-prev self))))
+    (when prev
+      (let ((key (table-key self rec)))
+        (when trans
+          (push (make-ch :op 'delete
+                         :tbl self
+                         :rec rec
+                         :prev (gethash key (tbl-recs self)))
+                (rest trans)))
+        
+        (when (tbl-idxs self)
+          (let ()
+            (when prev
+              (dolist (idx (tbl-idxs self))
+                (index-remove idx (index-key idx prev))))))
+
+        (remhash key (tbl-recs self))
+        (remhash rec (tbl-prev self))))))
 
 (defun table-prev? (self rec)
   (gethash rec (tbl-prev self)))
