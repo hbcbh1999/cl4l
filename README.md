@@ -14,7 +14,7 @@ Welcome to cl4l. The project supports asdf and may be loaded by calling ```(ql:q
 ```index.lisp``` implements ordered, optionally composite key/transacted/unique indexes.
 
 ### tables
-```table.lisp``` implements optionally composite key/transacted tables with index-/update support.
+```table.lisp``` implements optionally composite key/transacted tables with index-/update and i/o support.
 
 ### tests
 ```test.lisp``` implements a test framework using tags to group and trigger tests dynamically.
