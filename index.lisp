@@ -5,20 +5,20 @@
            index-join index-key
            index-last index-length index-match index-merge
            index-prev index-remove index-rollback
-           with-index-trans)
+           with-index-trans *index-trans*)
   (:shadowing-import-from cl4l-utils compare key-gen with-symbols)
   (:use cl))
 
 (in-package cl4l-index)
 
 ;; Default trans
-(defvar *trans* nil)
+(defvar *index-trans* nil)
 
 (defmacro with-index-trans ((&key trans) &body body)
   ;; Executes BODY in transaction that is automatically
   ;; rolled back on early and committed on normal exit
   (with-symbols (_res)
-    `(let ((*trans* (or ,trans (make-index-trans))))
+    `(let ((*index-trans* (or ,trans (make-index-trans))))
        (unwind-protect
             (progn
               (let ((,_res (progn ,@body)))
@@ -30,7 +30,7 @@
   head key-gen (length 0) tail (unique? t))
 
 (defstruct (tr)
-  added removed)
+  adds removes)
 
 (defstruct (ch)
   index key it)
@@ -139,7 +139,7 @@
 
 (defun index-add (self it &key (key (index-key self it))
                                start
-                               (trans *trans*))
+                               (trans *index-trans*))
   ;; Adds IT to SELF after START and returns IT
   (multiple-value-bind (prev found?)
       (index-prev self key :it it :start start)
@@ -148,7 +148,7 @@
                      (eq it (second prev))))
       (when trans
         (push (make-ch :index self :key key :it it)
-              (tr-added trans)))   
+              (tr-adds trans)))   
       (index-insert self prev it))))
 
 (defun index-delete (self prev)
@@ -160,14 +160,14 @@
     (decf (idx-length self))
     it))
 
-(defun index-remove (self key &key it start (trans *trans*))
+(defun index-remove (self key &key it start (trans *index-trans*))
   ;; Removes KEY/IT from SELF after START and returns item
   (multiple-value-bind (prev found?) 
       (index-prev self key :it it :start start)
     (when found?
       (when trans
         (push (make-ch :index self :key key :it (second prev))
-              (tr-removed trans)))
+              (tr-removes trans)))
       (index-delete self prev))))
 
 (defun index-match (self other &key prev-match)
@@ -237,21 +237,21 @@
     (unless m (return self))))
 
 (defun index-trans-reset (self)
-  (setf (tr-added self) nil
-        (tr-removed self) nil))
+  (setf (tr-adds self) nil
+        (tr-removes self) nil))
 
-(defun index-commit (&key (trans *trans*))
+(defun index-commit (&key (trans *index-trans*))
   ;; Clears changes made in TRANS
   (index-trans-reset trans))
 
-(defun index-rollback (&key (trans *trans*))
+(defun index-rollback (&key (trans *index-trans*))
   ;; Rolls back and clears changes made in TRANS
-  (dolist (ch (nreverse (tr-added trans)))
+  (dolist (ch (nreverse (tr-adds trans)))
     (index-remove (ch-index ch) (ch-key ch)
                :it (ch-it ch)
                :trans nil))
 
-  (dolist (ch (nreverse (tr-removed trans)))
+  (dolist (ch (nreverse (tr-removes trans)))
     (index-add (ch-index ch) (ch-it ch)
                :key (ch-key ch)
                :trans nil))
