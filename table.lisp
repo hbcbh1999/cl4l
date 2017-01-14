@@ -1,21 +1,33 @@
 (defpackage cl4l-table
-  (:export clone-record
+  (:export clone-record do-table-iter
            make-table make-table-trans
            table table-clone table-commit table-delete
            table-diff table-dump
-           table-find table-index table-join table-merge table-key
+           table-find table-index table-iter table-join
+           table-merge table-key
            table-length table-prev? table-read table-rollback
            table-slurp table-upsert table-write
            with-table-trans *table-trans*)
   (:shadowing-import-from cl4l-utils compare do-hash-table
                           key-gen when-let
                           with-symbols)
-  (:use cl cl4l-index cl4l-test))
+  (:use cl cl4l-index cl4l-iter cl4l-test))
 
 (in-package cl4l-table)
 
 ;; Default trans
 (defvar *table-trans* nil)
+
+(defmacro do-table-iter ((expr key rec prev) &body body)
+  (with-symbols (_it)
+    `(with-iter nil ,expr
+       (let* ((,_it iter-result)
+              (,key (first ,_it))
+              (,rec (second ,_it))
+              (,prev (nthcdr 2 ,_it)))
+         (declare (ignorable ,key ,rec ,prev))
+         ,@body)
+       (iter-next))))
 
 (defmacro with-table-trans ((&key trans) &body body)
   ;; Executes BODY in transaction that is automatically
@@ -100,6 +112,11 @@
 (defun table-index (self idx)
   (setf (tbl-idxs self) (adjoin idx (tbl-idxs self)))
   idx)
+
+(defun table-iter (self)
+  (do-hash-table ((tbl-recs self) key rec)
+    (let ((prev (gethash rec (tbl-prev self))))
+      (iter-yield (cons key (cons rec prev))))))
 
 (defun table-join (self other)
   ;; Removes all records from SELF that are not found in OTHER and
@@ -213,6 +230,8 @@
   (:method ((self list))
     (copy-list self)))
 
+(defparameter test-max 1000)
+
 (define-test (:table :stream)
   (with-output-to-string (out)
     (let ((tbl (make-table :key #'first :stream out)))
@@ -242,3 +261,16 @@
           (table-slurp tbl :stream in))
         (assert (equal '(1 3 4) (table-find tbl 1)))
         (assert (null (table-find tbl 2))))))
+
+(define-test (:table :iter)
+  (let ((tbl (make-table)))
+    (dotimes (i test-max)
+      (table-upsert tbl i))
+    
+    (let ((its))
+      (do-table-iter ((table-iter tbl) key rec prev)
+        (setf its (adjoin key its :test #'=)))
+
+      (dotimes (i test-max)
+        (assert (member i its :test #'=))))))
+    

@@ -47,7 +47,7 @@
 
 (defparameter fib-max 25)
 
-(define-test (:memoize :fib :perf :naive)
+(define-test (:memoize :fib :naive)
   (labels ((fib (n)
              (case n
                (0 0)
@@ -55,7 +55,7 @@
                (t (+ (fib (1- n)) (fib (- n 2)))))))
     (fib fib-max)))
 
-(define-test (:memoize :fib :perf)
+(define-test (:memoize :fib)
   (with-memoize ()
     (labels ((fib (n)
                (do-memoize (:key n :pred (> n 10))

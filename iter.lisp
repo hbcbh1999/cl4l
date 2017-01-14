@@ -1,5 +1,5 @@
 (defpackage cl4l-iter
-  (:export iter-next iter-yield with-iter)
+  (:export iter-next iter-result iter-yield with-iter)
   (:shadowing-import-from cl4l-utils symbol! with-symbols)
   (:use cl cl4l-test))
 
@@ -35,7 +35,7 @@
 
 (defparameter test-max 100000)
 
-(define-test (:iter :perf)
+(define-test (:iter)
   (flet ((foo (max)
            (dotimes (i max)
              (iter-yield i))))
@@ -45,7 +45,7 @@
         (incf j)
         (iter-next)))))
 
-(define-test (:iter :list :perf)
+(define-test (:iter :list)
   (flet ((foo (max)
            (let ((res))
              (dotimes (i max)

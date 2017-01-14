@@ -1,5 +1,3 @@
-* add (table-iter) & do-table-iter macro
-** use iter.lisp
 * add table & index events
 ** event.lisp
 * generalize (table-index) to (table-(un)depend self on)
@@ -10,6 +8,7 @@
 * change table idxs to use table key as rec
 * add fifo + channel
 ** base on sbcl fifo + atomic/semaphore
+* add index iter like table
 * add tag based logging
 * add db.lisp
 ** multi threaded
