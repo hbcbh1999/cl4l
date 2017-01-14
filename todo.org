@@ -1,8 +1,4 @@
-* rename coro to iter
-** add optional name param like defer
-** add macrolet iter-next as alias for name-next
-** rename do-coro to with-iter
-** add perf comparison between returning nreverse list and iter
+* add perf comparison between returning nreverse list and iter
 * add optional result to do-hash-table
 * add table & index events
 ** event.lisp

@@ -7,8 +7,8 @@ Welcome to cl4l. The project supports asdf and may be loaded by calling ```(ql:q
 ### memoization
 ```memoize.lisp``` implements general purpose memoization of arbitrary, potentially parameterized expressions.
 
-### coroutines
-```coro.lisp``` implements poor man's coroutines using conditions and restarts.
+### iterators
+```iter.lisp``` implements poor man's coroutines using conditions and restarts; that allow implementing fast, general purpose iterators without digitalizing iteration logic.
 
 ### indexes
 ```index.lisp``` implements ordered, optionally composite key/transacted/unique indexes that offer significantly (currently hovering above 10x) better performance for set operations.

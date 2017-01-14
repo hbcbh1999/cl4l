@@ -7,7 +7,7 @@
                (:file "utils")
                (:file "index")
                (:file "test")
-               (:file "coro")
+               (:file "iter")
                (:file "table")
                (:file "memoize")
                (:file "index-tests")
