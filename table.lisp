@@ -1,8 +1,9 @@
 (defpackage cl4l-table
   (:export clone-record
            make-table make-table-trans
-           table table-commit table-delete table-dump table-find
-           table-index table-key
+           table table-clone table-commit table-delete
+           table-diff table-dump
+           table-find table-index table-join table-merge table-key
            table-length table-prev? table-read table-rollback
            table-slurp table-upsert table-write
            with-table-trans *table-trans*)
@@ -33,13 +34,15 @@
   key-gen
   (prev (make-hash-table :test #'eq))
   recs
-  stream)
+  stream
+  test)
 
 (defstruct (ch)
   op tbl rec prev)
 
 (defun make-table (&key key key-gen (test #'equal) stream)
   (make-tbl :key-gen (or key-gen (key-gen key))
+            :test test
             :recs (make-hash-table :test test)
             :stream stream))
 
@@ -63,6 +66,16 @@
   (clrhash (tbl-prev self))
   (clrhash (tbl-recs self)))
 
+(defun table-clone (self)
+  ;; Returns clone of SELF
+  (let ((clone (make-table :key-gen (tbl-key-gen self)
+                           :test (tbl-test self))))
+    (do-hash-table ((tbl-prev self) rec prev)
+      (setf (gethash rec (tbl-prev self)) prev)
+      (setf (gethash (table-key clone prev) (tbl-recs self))
+            rec))
+    clone))
+
 (defun table-commit (&key (trans *table-trans*))
   ;; Clears changes made in TRANS
   (when trans
@@ -74,14 +87,39 @@
                      :stream stream)))
     (table-trans-reset trans)))
 
-(defun table-index (self idx)
-  (setf (tbl-idxs self) (adjoin idx (tbl-idxs self)))
-  idx)
+(defun table-diff (self other)
+  ;; Removes all records from SELF that are found in OTHER and
+  ;; returns SELF.
+  (do-hash-table ((tbl-prev other) rec prev)
+    (remhash rec (tbl-prev self))
+    (remhash (table-key self prev) (tbl-recs self)))
+  self)
 
 (defun table-find (self key)
   ;; Returns record with KEY from SELF,
   ;; or NIL if not found.
   (gethash key (tbl-recs self)))
+
+(defun table-index (self idx)
+  (setf (tbl-idxs self) (adjoin idx (tbl-idxs self)))
+  idx)
+
+(defun table-join (self other)
+  ;; Removes all records from SELF that are not found in OTHER and
+  ;; returns SELF.
+  (do-hash-table ((tbl-prev self) rec prev)
+    (unless (gethash rec (tbl-prev other))
+      (remhash rec (tbl-prev self))
+      (remhash (table-key self prev) (tbl-recs self))))
+  self)
+
+(defun table-merge (self other)
+  ;; Adds all records from OTHER that are not found in SELF and
+  ;; returns SELF.
+  (do-hash-table ((tbl-prev other) rec prev)
+    (setf (gethash rec (tbl-prev self)) prev)
+    (setf (gethash (table-key self prev) (tbl-recs self)) rec))
+  self)
 
 (defun table-key (self rec)
   (funcall (tbl-key-gen self) rec))
@@ -175,6 +213,8 @@
        (go next))))
 
 (defgeneric clone-record (self)
+  (:method (self)
+    self)
   (:method ((self list))
     (copy-list self)))
 

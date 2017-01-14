@@ -1,5 +1,6 @@
-* add set operations for tables like indexes
-** add perf comparison between table and index
+* expand when-let to allow several exprs like let
+** update table.lisp
+* add optional result to do-hash-table
 * investigate using memoize for implementing table
 ** externalize key instead of gensym (&key)
 ** same context for both tables

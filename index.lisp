@@ -59,7 +59,7 @@
                 :length (length sits))))
 
 (defun index-clone (self)
-  ;; Returns a clone of SELF
+  ;; Returns clone of SELF
   (let ((its (copy-list (idx-head self))))
     (make-index :key-gen (idx-key-gen self) 
 		:head its 
@@ -196,7 +196,7 @@
            (return (cons prev-iit jit))))))))
 
 (defun index-join (self other)
-  ;; Removes all items from SELF that are not found in OTHER and
+  ;; Removes all records from SELF that are not found in OTHER and
   ;; returns SELF.
   (do ((m nil)
        (first? t nil)
@@ -210,7 +210,7 @@
     (unless m (return self))))
 
 (defun index-diff (self other)
-  ;; Removes all items from SELF that are found in OTHER and
+  ;; Removes all records from SELF that are found in OTHER and
   ;; returns SELF.
   (do ((m nil)) (nil)
     (setf m (index-match self other :prev-match m))
@@ -218,7 +218,7 @@
     (unless m (return self))))
 
 (defun index-merge (self other)
-  ;; Adds all items from OTHER that are not found in SELF and
+  ;; Adds all records from OTHER that are not found in SELF and
   ;; returns SELF.
   (do ((m nil)
        (first? t nil)
