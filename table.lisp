@@ -50,7 +50,8 @@
 
 (defun table-commit (&key (trans *table-trans*))
   ;; Clears changes made in TRANS
-  (table-trans-reset trans))
+  (when trans
+    (table-trans-reset trans)))
 
 (defun table-find (self key)
   ;; Returns record with KEY from SELF,
@@ -70,7 +71,7 @@
                      :tbl self
                      :rec rec
                      :prev (gethash key (tbl-recs self)))
-            trans))
+            (rest  trans)))
   (setf (gethash key (tbl-recs self)) rec)
   (setf (gethash rec (tbl-prev self)) (clone-record rec))))
 
@@ -81,7 +82,7 @@
                      :tbl self
                      :rec rec
                      :prev (gethash key (tbl-recs self)))
-            trans))
+            (rest trans)))
     (remhash key (tbl-recs self))
     (remhash rec (tbl-prev self))))
 
@@ -90,15 +91,16 @@
 
 (defun table-rollback (&key (trans *table-trans*))
   ;; Rolls back and clears changes made in TRANS
-  (dolist (ch (rest (nreverse trans)))
-    (ecase (first trans)
-      (upsert
-       (if (ch-prev ch)
-           (table-upsert (ch-tbl ch) (ch-prev ch) :trans nil)
-           (table-delete (ch-tbl ch) (ch-rec ch) :trans nil)))
-      (delete
-       (table-upsert (ch-tbl ch) (ch-rec ch) :trans nil))))
+  (when trans
+    (dolist (ch (nreverse (rest trans)))
+      (ecase (first trans)
+        (upsert
+         (if (ch-prev ch)
+             (table-upsert (ch-tbl ch) (ch-prev ch) :trans nil)
+             (table-delete (ch-tbl ch) (ch-rec ch) :trans nil)))
+        (delete
+         (table-upsert (ch-tbl ch) (ch-rec ch) :trans nil))))
 
-  (table-trans-reset trans))
+    (table-trans-reset trans)))
 
 (defgeneric clone-record (self))

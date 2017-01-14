@@ -29,11 +29,8 @@
 (defstruct (idx) 
   head key-gen (length 0) tail (unique? t))
 
-(defstruct (tr)
-  adds removes)
-
 (defstruct (ch)
-  index key it)
+  op index key it)
 
 (defun make-index (&key key
                         key-gen
@@ -49,7 +46,7 @@
             :unique? unique?))
 
 (defun make-index-trans ()
-  (make-tr))
+  (list nil))
 
 (defun index (key &rest its)
   ;; Returns a new index with KEY, initialized from ITS
@@ -147,8 +144,8 @@
                  (or (idx-unique? self)
                      (eq it (second prev))))
       (when trans
-        (push (make-ch :index self :key key :it it)
-              (tr-adds trans)))   
+        (push (make-ch :op 'add :index self :key key :it it)
+              (rest trans)))   
       (index-insert self prev it))))
 
 (defun index-delete (self prev)
@@ -166,8 +163,10 @@
       (index-prev self key :it it :start start)
     (when found?
       (when trans
-        (push (make-ch :index self :key key :it (second prev))
-              (tr-removes trans)))
+        (push (make-ch :op 'remove
+                       :index self
+                       :key key :it (second prev))
+              (rest trans)))
       (index-delete self prev))))
 
 (defun index-match (self other &key prev-match)
@@ -237,26 +236,27 @@
     (unless m (return self))))
 
 (defun index-trans-reset (self)
-  (setf (tr-adds self) nil
-        (tr-removes self) nil))
+  (rplacd self nil))
 
 (defun index-commit (&key (trans *index-trans*))
   ;; Clears changes made in TRANS
-  (index-trans-reset trans))
+  (when trans
+    (index-trans-reset trans)))
 
 (defun index-rollback (&key (trans *index-trans*))
   ;; Rolls back and clears changes made in TRANS
-  (dolist (ch (nreverse (tr-adds trans)))
-    (index-remove (ch-index ch) (ch-key ch)
-               :it (ch-it ch)
-               :trans nil))
-
-  (dolist (ch (nreverse (tr-removes trans)))
-    (index-add (ch-index ch) (ch-it ch)
-               :key (ch-key ch)
-               :trans nil))
-
-  (index-trans-reset trans))
+  (when trans
+    (dolist (ch (nreverse (rest trans)))
+      (ecase (ch-op ch)
+        (add
+         (index-remove (ch-index ch) (ch-key ch)
+                       :it (ch-it ch)
+                       :trans nil))
+        (remove
+         (index-add (ch-index ch) (ch-it ch)
+                    :key (ch-key ch)
+                    :trans nil))))
+    (index-trans-reset trans)))
 
 (defmethod compare ((x idx) y)
   (compare (index-first x) (index-first y)))

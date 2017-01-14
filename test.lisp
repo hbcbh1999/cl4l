@@ -5,7 +5,7 @@
 
 (in-package cl4l-test)
 
-(defvar *suite* (index #'first))
+(defparameter *suite* (index #'first))
 
 (defmacro define-test ((&rest tags) &body body)
   `(test (list ,@tags) (lambda () ,@body)))
@@ -13,12 +13,11 @@
 (defun test (tags fn &key (suite *suite*))
   (let ((found (index-find suite tags)))
     (if found
-        (setf (rest found) fn)
+        (rplacd found fn)
         (index-add suite (cons tags fn)))))
 
 (defun untest (tags &key (suite *suite*))
   (index-remove suite tags))
-
 
 (defgeneric run-test (tags fn &key warmup reps)
   (:method (tags fn &key (warmup 0) (reps 1))
