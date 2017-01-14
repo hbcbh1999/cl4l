@@ -34,15 +34,13 @@
   key-gen
   (prev (make-hash-table :test #'eq))
   recs
-  stream
-  test)
+  stream)
 
 (defstruct (ch)
   op tbl rec prev)
 
 (defun make-table (&key key key-gen (test #'equal) stream)
   (make-tbl :key-gen (or key-gen (key-gen key))
-            :test test
             :recs (make-hash-table :test test)
             :stream stream))
 
@@ -69,7 +67,8 @@
 (defun table-clone (self)
   ;; Returns clone of SELF
   (let ((clone (make-table :key-gen (tbl-key-gen self)
-                           :test (tbl-test self))))
+                           :test (hash-table-test
+                                  (tbl-recs self)))))
     (do-hash-table ((tbl-prev self) rec prev)
       (setf (gethash rec (tbl-prev self)) prev)
       (setf (gethash (table-key clone prev) (tbl-recs self))
