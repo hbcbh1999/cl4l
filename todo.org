@@ -1,4 +1,6 @@
-* add index trans type like table
+* add index trans type field like table
 * add table idxs
 ** add/rem
 ** replaces custom code in vicsy
+* add optional :stream to table
+** add (ch-commit self) to print changes to table's :stream
