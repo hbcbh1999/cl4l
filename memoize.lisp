@@ -22,8 +22,10 @@
             (,_key (cons ',_id ,key))
             (,_found? (and ,_pred (gethash ,_key ,_context))))
        (if ,_pred
-           (or ,_found? (setf (gethash ,_key ,_context)
-                              (progn ,@body)))
+           (progn
+             (unless ,_found? (setf (gethash ,_key ,_context)
+                                    (progn ,@body)))
+             (gethash ,_key ,_context))
            (progn ,@body)))))
 
 (defmacro with-memoize ((&key context) &body body)
