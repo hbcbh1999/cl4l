@@ -35,6 +35,9 @@
       ((> x y) 1)
       (t 0)))
 
+  (:method ((x null) y)
+    (if (null y) 0 -1))
+
   (:method ((x string) y)
     (do ((i 0 (1+ i)))
 	((= i (min (length x) (length y)))
