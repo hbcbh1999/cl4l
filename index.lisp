@@ -144,7 +144,7 @@
                  (or (idx-unique? self)
                      (eq it (second prev))))
       (when trans
-        (push (make-ch :op 'add :index self :key key :it it)
+        (push (make-ch :op :add :index self :key key :it it)
               (rest trans)))   
       (index-insert self prev it))))
 
@@ -163,7 +163,7 @@
       (index-prev self key :it it :start start)
     (when found?
       (when trans
-        (push (make-ch :op 'remove
+        (push (make-ch :op :remove
                        :index self
                        :key key :it (second prev))
               (rest trans)))
@@ -248,11 +248,11 @@
   (when trans
     (dolist (ch (nreverse (rest trans)))
       (ecase (ch-op ch)
-        (add
+        (:add
          (index-remove (ch-index ch) (ch-key ch)
                        :it (ch-it ch)
                        :trans nil))
-        (remove
+        (:remove
          (index-add (ch-index ch) (ch-it ch)
                     :key (ch-key ch)
                     :trans nil))))

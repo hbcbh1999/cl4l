@@ -5,8 +5,9 @@
            table-index table-key
            table-length table-prev? table-rollback table-upsert
            with-table-trans *table-trans*)
-  (:shadowing-import-from cl4l-utils compare key-gen with-symbols)
-  (:use cl cl4l-index))
+  (:shadowing-import-from cl4l-utils compare key-gen when-let
+                          with-symbols)
+  (:use cl cl4l-index cl4l-test))
 
 (in-package cl4l-table)
 
@@ -28,15 +29,17 @@
 (defstruct (tbl)
   idxs
   key-gen
+  (prev (make-hash-table :test #'eq))
   recs
-  (prev (make-hash-table :test #'eq)))
+  stream)
 
 (defstruct (ch)
   op tbl rec prev)
 
-(defun make-table (&key key key-gen (test #'equal))
+(defun make-table (&key key key-gen (test #'equal) stream)
   (make-tbl :key-gen (or key-gen (key-gen key))
-            :recs (make-hash-table :test test)))
+            :recs (make-hash-table :test test)
+            :stream stream))
 
 (defun table (key &rest recs)
   ;; Returns a new table with KEY from RECS
@@ -50,9 +53,20 @@
 (defun table-trans-reset (self)
   (rplacd self nil))
 
+(defun write-op (op rec stream)
+  (write (cons op rec) :stream stream)
+  (terpri stream))
+
+(defun table-clear (self)
+  (clrhash (tbl-prev self))
+  (clrhash (tbl-recs self)))
+
 (defun table-commit (&key (trans *table-trans*))
   ;; Clears changes made in TRANS
   (when trans
+    (dolist (ch (nreverse (rest trans)))
+      (when-let (stream (tbl-stream (ch-tbl ch)))
+        (write-op (ch-op ch) (ch-prev ch) stream)))
     (table-trans-reset trans)))
 
 (defun table-index (self idx)
@@ -71,32 +85,40 @@
   (hash-table-count (tbl-recs self)))
 
 (defun table-upsert (self rec &key (trans *table-trans*))
-  (let ((key (table-key self rec)))
-    (when trans
-      (push (make-ch :op 'upsert
+  (let ((key (table-key self rec))
+        (prev (gethash rec (tbl-prev self))))
+    (if trans
+      (push (make-ch :op :upsert
                      :tbl self
                      :rec rec
-                     :prev (gethash key (tbl-recs self)))
-            (rest  trans)))
+                     :prev prev)
+            (rest  trans))
+      (when-let (stream (tbl-stream self))
+        (write-op :upsert (or prev rec) stream)))
+    
     (when (tbl-idxs self)
       (let ((prev (gethash rec (tbl-prev self))))
         (dolist (idx (tbl-idxs self))
           (when prev
             (index-remove idx (index-key idx prev)))
           (index-add idx rec))))
-  (setf (gethash key (tbl-recs self)) rec)
-  (setf (gethash rec (tbl-prev self)) (clone-record rec))))
+
+    (setf (gethash key (tbl-recs self)) rec)
+    (setf (gethash rec (tbl-prev self)) (clone-record rec))))
 
 (defun table-delete (self rec &key (trans *table-trans*))
   (let ((prev (gethash rec (tbl-prev self))))
     (when prev
-      (let ((key (table-key self rec)))
-        (when trans
-          (push (make-ch :op 'delete
+      (let ((key (table-key self rec))
+            (prev (gethash rec (tbl-prev self))))
+        (if trans
+          (push (make-ch :op :delete
                          :tbl self
                          :rec rec
-                         :prev (gethash key (tbl-recs self)))
-                (rest trans)))
+                         :prev prev)
+                (rest trans))
+          (when-let (stream (tbl-stream self))
+            (write-op :delete prev stream)))
         
         (when (tbl-idxs self)
           (let ()
@@ -114,14 +136,45 @@
   ;; Rolls back and clears changes made in TRANS
   (when trans
     (dolist (ch (nreverse (rest trans)))
-      (ecase (first trans)
-        (upsert
+      (ecase (ch-op ch)
+        (:upsert
          (if (ch-prev ch)
              (table-upsert (ch-tbl ch) (ch-prev ch) :trans nil)
              (table-delete (ch-tbl ch) (ch-rec ch) :trans nil)))
-        (delete
+        (:delete
          (table-upsert (ch-tbl ch) (ch-rec ch) :trans nil))))
 
     (table-trans-reset trans)))
 
-(defgeneric clone-record (self))
+(defun table-slurp (self &key (stream (tbl-stream self)))
+  (tagbody
+   next
+     (when-let (ln (read-line stream nil))
+       (let ((form (read-from-string ln)))
+         (ecase (first form)
+           (:upsert
+            (table-upsert self (rest form)))
+           (:delete
+            (table-delete self
+                          (table-find self
+                                      (table-key self
+                                                 (rest form))))))
+         (go next)))))
+
+(defgeneric clone-record (self)
+  (:method ((self list))
+    (copy-list self)))
+
+(define-test (:table :stream)
+  (with-output-to-string (out)
+    (let ((tbl (make-table :key #'first :stream out)))
+      (table-upsert tbl '(1 2 3))
+      (table-upsert tbl '(1 3 4))
+      (let ((rec '(2 3 4)))
+        (table-upsert tbl rec)
+        (table-delete tbl rec))
+      (table-clear tbl)
+      (with-input-from-string (in (get-output-stream-string out))
+        (table-slurp tbl :stream in))
+      (assert (equal '(1 3 4) (table-find tbl 1)))
+      (assert (null (table-find tbl 2))))))

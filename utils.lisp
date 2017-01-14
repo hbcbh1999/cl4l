@@ -1,7 +1,7 @@
 (defpackage cl4l-utils
   (:export compare defer do-hash-table key-gen let-when
            str! string! symbol!
-           with-defer with-symbols)
+           when-let with-defer with-symbols)
   (:use cl))
 
 (in-package cl4l-utils)
@@ -93,9 +93,16 @@
        (cons (funcall (first key) it)
              (funcall (rest key) it))))))
 
-(defmacro let-when ((var expr cnd) &body body)
-  `(let ((,var ,expr))
-     (when ,cnd ,@body)
+(defmacro when-let ((cnd expr) &body body)
+  `(let ((,cnd ,expr))
+     (when ,cnd
+       ,@body)
+     ,cnd))
+
+(defmacro let-when ((cnd var expr) &body body)
+  `(when ,cnd
+     (let ((,var ,expr))
+       ,@body)
      ,var))
 
 (defun str! (x)

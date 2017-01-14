@@ -1,2 +1,1 @@
-* add optional :stream to table
-** add (ch-commit self) to print changes to table's :stream
+* add support for index streams
