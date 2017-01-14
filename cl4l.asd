@@ -5,10 +5,10 @@
   :serial t
   :components ((:file "cl4l")
                (:file "utils")
-               (:file "slist")
+               (:file "index")
                (:file "test")
                (:file "coro")
                (:file "table")
                (:file "memoize")
-               (:file "slist-tests")
+               (:file "index-tests")
                (:file "utils-tests")))

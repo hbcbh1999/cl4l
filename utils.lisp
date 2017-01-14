@@ -1,5 +1,5 @@
 (defpackage cl4l-utils
-  (:export compare defer do-hash-table let-when
+  (:export compare defer do-hash-table key-gen let-when
            str! string! symbol!
            with-defer with-symbols)
   (:use cl))
@@ -15,6 +15,12 @@
       ((char< x y) -1)
       ((char> x y) 1)
       (t 0)))
+
+  (:method ((x cons) y)
+    (let ((cmp (compare (first x) (first y))))
+      (if (zerop cmp)
+          (compare (rest x) (rest y))
+          cmp)))
 
   (:method ((x list) y)
     (do ((xi x (rest xi)) (yi y (rest yi)))
@@ -68,6 +74,20 @@
             ,@body)
           (go start)
         end))))
+
+(defun key-gen (key)
+  (cond
+    ((null key) (lambda (it) it))
+    ((atom key) (lambda (it) (funcall key it)))
+    ((eq 'list (type-of key))
+     (lambda (it)
+       (mapcar (lambda (k)
+                 (if (null k) it (funcall k it)))
+               key)))
+    ((consp key)
+     (lambda (it)
+       (cons (funcall (first key) it)
+             (funcall (second key) it))))))
 
 (defmacro let-when ((var expr cnd) &body body)
   `(let ((,var ,expr))

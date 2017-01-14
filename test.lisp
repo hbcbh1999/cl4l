@@ -1,23 +1,23 @@
 (defpackage cl4l-test
   (:export define-test run-suite run-test test untest)
   (:shadowing-import-from cl4l-utils with-symbols)
-  (:use cl cl4l-slist))
+  (:use cl cl4l-index))
 
 (in-package cl4l-test)
 
-(defvar *suite* (slist #'first))
+(defparameter *suite* (index #'first))
 
 (defmacro define-test ((&rest tags) &body body)
   `(test (list ,@tags) (lambda () ,@body)))
 
 (defun test (tags fn &key (suite *suite*))
-  (let ((found (slist-find suite tags)))
+  (let ((found (index-find suite tags)))
     (if found
         (setf (rest found) fn)
-        (slist-add suite (cons tags fn)))))
+        (index-add suite (cons tags fn)))))
 
 (defun untest (tags &key (suite *suite*))
-  (slist-rem suite tags nil))
+  (index-remove suite tags))
 
 
 (defgeneric run-test (tags fn &key warmup reps)
@@ -38,7 +38,7 @@
     (tagbody
      retry-suite
        (let ((tot-time 0))
-         (dolist (test (slist-first suite))
+         (dolist (test (index-first suite))
            (let ((test-tags (first test))
                  (test-fn (rest test)))
              (when (and (or (null tags)
