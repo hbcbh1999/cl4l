@@ -10,6 +10,9 @@ The project supports asdf and may be loaded by calling ```(ql:quickload "cl4l")`
 ### memoization
 ```memoize.lisp``` implements support for general purpose memoization of arbitrary, potentially parameterized expressions.
 
+### coroutines
+```coro.lisp``` implements poor man's coroutines using conditions and restarts.
+
 ### ordered sets
 ```slist.lisp``` implements ordered, optionally composite key/transacted/unique sets based on lists.
 
