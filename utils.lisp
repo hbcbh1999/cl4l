@@ -66,7 +66,7 @@
            (dolist (fn ,_name)
              (funcall fn)))))))
 
-(defmacro do-hash-table ((tbl key val) &body body)
+(defmacro do-hash-table ((tbl key val &key result) &body body)
   (with-symbols (_found _iter)
     `(with-hash-table-iterator (,_iter ,tbl)
        (tagbody
@@ -76,7 +76,8 @@
             (unless ,_found (go end))
             ,@body)
           (go start)
-        end))))
+        end)
+       ,result)))
 
 (defun key-gen (key)
   (cond

@@ -69,11 +69,10 @@
   (let ((clone (make-table :key-gen (tbl-key-gen self)
                            :test (hash-table-test
                                   (tbl-recs self)))))
-    (do-hash-table ((tbl-prev self) rec prev)
+    (do-hash-table ((tbl-prev self) rec prev :result clone)
       (setf (gethash rec (tbl-prev self)) prev)
       (setf (gethash (table-key clone prev) (tbl-recs self))
-            rec))
-    clone))
+            rec))))
 
 (defun table-commit (&key (trans *table-trans*))
   ;; Clears changes made in TRANS
@@ -89,10 +88,9 @@
 (defun table-diff (self other)
   ;; Removes all records from SELF that are found in OTHER and
   ;; returns SELF.
-  (do-hash-table ((tbl-prev other) rec prev)
+  (do-hash-table ((tbl-prev other) rec prev :result self)
     (remhash rec (tbl-prev self))
-    (remhash (table-key self prev) (tbl-recs self)))
-  self)
+    (remhash (table-key self prev) (tbl-recs self))))
 
 (defun table-find (self key)
   ;; Returns record with KEY from SELF,
@@ -106,19 +104,17 @@
 (defun table-join (self other)
   ;; Removes all records from SELF that are not found in OTHER and
   ;; returns SELF.
-  (do-hash-table ((tbl-prev self) rec prev)
+  (do-hash-table ((tbl-prev self) rec prev :result self)
     (unless (gethash rec (tbl-prev other))
       (remhash rec (tbl-prev self))
-      (remhash (table-key self prev) (tbl-recs self))))
-  self)
+      (remhash (table-key self prev) (tbl-recs self)))))
 
 (defun table-merge (self other)
   ;; Adds all records from OTHER that are not found in SELF and
   ;; returns SELF.
-  (do-hash-table ((tbl-prev other) rec prev)
+  (do-hash-table ((tbl-prev other) rec prev :result self)
     (setf (gethash rec (tbl-prev self)) prev)
-    (setf (gethash (table-key self prev) (tbl-recs self)) rec))
-  self)
+    (setf (gethash (table-key self prev) (tbl-recs self)) rec)))
 
 (defun table-key (self rec)
   (funcall (tbl-key-gen self) rec))
@@ -189,7 +185,7 @@
     (table-trans-reset trans)))
 
 (defun table-dump (self &key (stream (tbl-stream self)))
-  (do-hash-table ((tbl-prev self) _ prev)
+  (do-hash-table ((tbl-prev self) _ prev :result self)
     (table-write self :upsert prev :stream stream)))
 
 (defun table-read (self &key (stream (tbl-stream self)))

@@ -1,4 +1,5 @@
-* add optional result to do-hash-table
+* add (table-iter) & do-table-iter macro
+** use iter.lisp
 * add table & index events
 ** event.lisp
 * generalize (table-index) to (table-(un)depend self on)
