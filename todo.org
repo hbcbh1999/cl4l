@@ -1,12 +1,16 @@
 * add set operations for tables like indexes
 ** add perf comparison between table and index
+* investigate using memoize for implementing table
+** externalize key instead of gensym (&key)
+** same context for both tables
 * add perf comparison between returning list, iter struct and coro
 ** post?
 * rename it to rec in index.lisp
-* generalize (table-index) to (table-depend self on)
+* add table & index events
+* generalize (table-index) to (table-(un)depend self on)
 ** support both tables & indexes
-* add (index-depend self on)
-
+** hook into events
+* add (index-(un)depend self on)
 * add support for index streams like table
 * change table idxs to use table key as rec
 * add fifo + channel
