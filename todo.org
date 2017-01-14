@@ -1,4 +1,3 @@
-* add index trans type field like table
 * add table idxs
 ** add/rem
 ** replaces custom code in vicsy

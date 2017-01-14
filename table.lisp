@@ -30,7 +30,7 @@
   (prev (make-hash-table :test #'eq)))
 
 (defstruct (ch)
-  type tbl rec prev)
+  op tbl rec prev)
 
 (defun make-table (&key key key-gen (test #'equal))
   (make-tbl :key-gen (or key-gen (key-gen key))
@@ -67,7 +67,7 @@
 (defun table-upsert (self rec &key (trans *table-trans*))
   (let ((key (table-key self rec)))
     (when trans
-      (push (make-ch :type 'upsert
+      (push (make-ch :op 'upsert
                      :tbl self
                      :rec rec
                      :prev (gethash key (tbl-recs self)))
@@ -78,7 +78,7 @@
 (defun table-delete (self rec &key (trans *table-trans*))
   (let ((key (table-key self rec)))
     (when trans
-      (push (make-ch :type 'delete
+      (push (make-ch :op 'delete
                      :tbl self
                      :rec rec
                      :prev (gethash key (tbl-recs self)))
