@@ -4,3 +4,5 @@
 * rename table stored to prev
 * add table trans
 ** copy index
+* add tbl idxs
+** add/rem

@@ -26,7 +26,7 @@
                 ,_res))
          (index-rollback)))))
 
-(defstruct (lst) 
+(defstruct (idx) 
   head key-gen (length 0) tail (unique? t))
 
 (defstruct (tr)
@@ -42,7 +42,7 @@
                         (length 0)
                         (unique? t))
   ;; Returns a new index from ARGS
-  (make-lst :key-gen (or key-gen (key-gen key))
+  (make-idx :key-gen (or key-gen (key-gen key))
             :head head
             :tail (or tail (last head))
             :length length
@@ -63,48 +63,48 @@
 
 (defun index-clone (self)
   ;; Returns a clone of SELF
-  (let ((its (copy-list (lst-head self))))
-    (make-index :key-gen (lst-key-gen self) 
+  (let ((its (copy-list (idx-head self))))
+    (make-index :key-gen (idx-key-gen self) 
 		:head its 
-		:length (lst-length self)
-                :unique? (lst-unique? self))))
+		:length (idx-length self)
+                :unique? (idx-unique? self))))
 
 (defun index-key (self it)
   ;; Returns key for IT in SELF
-  (funcall (lst-key-gen self) it))
+  (funcall (idx-key-gen self) it))
 
 (defun (setf index-key) (key self)
   ;; Sets KEY in SELF
-  (setf (lst-key-gen self) (key-gen key)))
+  (setf (idx-key-gen self) (key-gen key)))
 
 (defun index-last (self)
   ;; Returns the last item from SELF
-  (lst-tail self))
+  (idx-tail self))
 
 (defun index-length (self)
   ;; Returns the length of SELF
-  (lst-length self))
+  (idx-length self))
 
 (defun index-prev (self key &key it start)
   ;; Returns the previous item in SELF matching KEY/IT,
   ;; from START excl.
-  (unless start (setf start (lst-head self)))
+  (unless start (setf start (idx-head self)))
   (if (null (rest start))
       (values start nil 0)
-      (let* ((lit (lst-tail self))
+      (let* ((lit (idx-tail self))
 	     (lit-cmp (compare key 
                                (index-key self (first lit)))))
 	(if  (> lit-cmp 0)
-	     (values lit (zerop lit-cmp) (lst-length self))
+	     (values lit (zerop lit-cmp) (idx-length self))
 	     (do ((its start (rest its))
 		  (pos 0 (1+ pos)))
 		 ((null (rest its)) 
-		  (values (lst-tail self) nil pos))
+		  (values (idx-tail self) nil pos))
 	       (let ((cmp (compare key 
                                    (index-key 
                                     self (second its)))))
                  (when (and (zerop cmp)
-                            (not (lst-unique? self))
+                            (not (idx-unique? self))
                             it)
                    (setf cmp (compare it (second its))))
 		 (when (< cmp 1)
@@ -112,7 +112,7 @@
 
 (defun index-first (self &key key it)
   ;; Returns all items in SELF, optionally from KEY/IT incl.
-  (rest (if key (index-prev self key :it it) (lst-head self))))
+  (rest (if key (index-prev self key :it it) (idx-head self))))
 
 (defun index-find (self key &key it start)
   ;; Returns item with KEY/IT in SELF, from START excl.;
@@ -132,9 +132,9 @@
 (defun index-insert (self prev it)
   ;; Inserts IT after PREV in SELF and returns IT
   (let* ((its (push it (rest prev))))
-    (when (eq prev (lst-tail self))
-      (setf (lst-tail self) its))
-    (incf (lst-length self))
+    (when (eq prev (idx-tail self))
+      (setf (idx-tail self) its))
+    (incf (idx-length self))
     it))
 
 (defun index-add (self it &key (key (index-key self it))
@@ -144,7 +144,7 @@
   (multiple-value-bind (prev found?)
       (index-prev self key :it it :start start)
     (unless (and found?
-                 (or (lst-unique? self)
+                 (or (idx-unique? self)
                      (eq it (second prev))))
       (when trans
         (push (make-ch :index self :key key :it it)
@@ -153,11 +153,11 @@
 
 (defun index-delete (self prev)
   ;; Deletes item after PREV from SELF returns it
-  (when (eq (rest prev) (lst-tail self))
-    (setf (lst-tail self) prev))
+  (when (eq (rest prev) (idx-tail self))
+    (setf (idx-tail self) prev))
   (let ((it (second prev)))
     (pop (rest prev))
-    (decf (lst-length self))
+    (decf (idx-length self))
     it))
 
 (defun index-remove (self key &key it start (trans *trans*))
@@ -174,7 +174,7 @@
   ;; Returns next matching items from (SELF . OTHER),
   ;; optionally starting from PREV-MATCH.
   (unless prev-match
-    (setf prev-match (cons (lst-head self) (lst-head other))))
+    (setf prev-match (cons (idx-head self) (idx-head other))))
   (let* ((start (first prev-match)) (prev-iit start))
     (do ((iit (rest start)) 
          (jit (rest (rest prev-match))))
@@ -201,7 +201,7 @@
   ;; returns SELF.
   (do ((m nil)
        (first? t nil)
-       (prev (lst-head self) (rest (first m)))) (nil)
+       (prev (idx-head self) (rest (first m)))) (nil)
     (setf m (index-match self other :prev-match m))
     
     (do ((it (second (first m))))
@@ -223,7 +223,7 @@
   ;; returns SELF.
   (do ((m nil)
        (first? t nil)
-       (start (lst-head self) (rest (first m)))
+       (start (idx-head self) (rest (first m)))
        (prev (index-first other) (rest (rest m)))) (nil)
     (setf m (index-match self other :prev-match m))
 
@@ -258,5 +258,5 @@
 
   (index-trans-reset trans))
 
-(defmethod compare ((x lst) y)
+(defmethod compare ((x idx) y)
   (compare (index-first x) (index-first y)))
