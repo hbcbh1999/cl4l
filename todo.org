@@ -1,8 +1,5 @@
-* add table-key
-* change table recs to hash table
-** take both key & test as params
-* rename table stored to prev
 * add table trans
 ** copy index
 * add tbl idxs
 ** add/rem
+** replaces custom code in vicsy

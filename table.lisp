@@ -1,42 +1,48 @@
 (defpackage cl4l-table
   (:export clone-record
            make-table make-table-trans
-           table-delete table-find table-stored? table-upsert
+           table table-delete table-find table-key table-length
+           table-prev? table-upsert
            with-table-trans)
-  (:shadowing-import-from cl4l-utils compare with-symbols)
-  (:use cl cl4l-index))
+  (:shadowing-import-from cl4l-utils compare key-gen with-symbols)
+  (:use cl))
 
 (in-package cl4l-table)
 
 (defstruct (tbl)
+  key-gen
   recs
-  (stored (make-hash-table :test #'eq)))
+  (prev (make-hash-table :test #'eq)))
 
-(defun make-table (key)
-  (make-tbl :recs (index key)))
+(defun make-table (&key key key-gen (test #'equal))
+  (make-tbl :key-gen (or key-gen (key-gen key))
+            :recs (make-hash-table :test test)))
 
-(defun table-key (self rec)
-  (index-key (tbl-recs self) rec))
+(defun table (key &rest recs)
+  ;; Returns a new table with KEY from RECS
+  (let ((tbl (make-table :key key)))
+    (dolist (rec recs tbl)
+      (table-upsert tbl rec))))
 
 (defun table-find (self key)
   ;; Returns record with KEY from SELF,
   ;; or NIL if not found.
-  (index-find (tbl-recs self) key))
-  
+  (gethash key (tbl-recs self)))
+
+(defun table-key (self rec)
+  (funcall (tbl-key-gen self) rec))
+
+(defun table-length (self)
+  (hash-table-count (tbl-recs self)))
+
 (defun table-upsert (self rec &key (key (table-key self rec)))
-  (multiple-value-bind (prev found?)
-      (index-prev (tbl-recs self) key)
-    (if found?
-        (rplaca (rest prev) rec)
-        (index-insert (tbl-recs self) prev rec))
-    (setf (gethash self (tbl-stored self))
-          (clone-record rec))))
+  (setf (gethash key (tbl-recs self)) rec))
 
 (defun table-delete (self rec)
-  (index-remove (tbl-recs self) (table-key self rec))
-  (remhash rec (tbl-stored self)))
+  (remhash (table-key self rec) (tbl-recs self))
+  (remhash rec (tbl-prev self)))
 
-(defun table-stored? (self rec)
-  (gethash rec (tbl-stored self)))
+(defun table-prev? (self rec)
+  (gethash rec (tbl-prev self)))
 
 (defgeneric clone-record (self))
