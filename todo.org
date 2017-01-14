@@ -1,4 +1,2 @@
-* update vicsy to use slists
-* remove index + tests
-* move stored support / updates from vicsy to slist
-** update on add/rem
+* add table transactions
+** copy slist

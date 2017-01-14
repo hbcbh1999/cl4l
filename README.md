@@ -13,6 +13,9 @@ The project supports asdf and may be loaded by calling ```(ql:quickload "cl4l")`
 ### ordered sets
 ```slist.lisp``` implements ordered, optionally composite key/transacted/unique sets based on lists.
 
+### tables
+```table.lisp``` implements optionally composite key/transacted tables with update support on top of ordered sets.
+
 ### tests
 ```test.lisp``` implements a test framework based on the idea of using tags to group and trigger tests dynamically.
 

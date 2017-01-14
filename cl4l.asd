@@ -7,6 +7,7 @@
                (:file "utils")
                (:file "slist")
                (:file "test")
+               (:file "table")
                (:file "memoize")
                (:file "slist-tests")
                (:file "utils-tests")))
