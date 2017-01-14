@@ -66,9 +66,9 @@
 		:length (idx-length self)
                 :unique? (idx-unique? self))))
 
-(defun index-key (self it)
-  ;; Returns key for IT in SELF
-  (funcall (idx-key-gen self) it))
+(defun index-key (self rec)
+  ;; Returns key for REC in SELF
+  (funcall (idx-key-gen self) rec))
 
 (defun (setf index-key) (key self)
   ;; Sets KEY in SELF
