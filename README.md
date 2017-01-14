@@ -1,8 +1,8 @@
 # cl4l
 #### esoteric CL essentials
 
-### setup
-The project supports asdf and may be loaded by calling ```(ql:quickload "cl4l")``` once cl4l.asd is in the asdf search path. Call ```(cl4l-test:run-tests nil)``` to run tests.
+### welcome
+Welcome to cl4l. The project supports asdf and may be loaded by calling ```(ql:quickload "cl4l")``` once cl4l.asd is in the asdf search path. ```(cl4l-test:run-suite nil)``` runs all tests.
 
 ### memoization
 ```memoize.lisp``` implements general purpose memoization of arbitrary, potentially parameterized expressions.
