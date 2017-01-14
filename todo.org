@@ -1,5 +1,4 @@
-* add table trans
-** copy index
-* add tbl idxs
+* add index trans type like table
+* add table idxs
 ** add/rem
 ** replaces custom code in vicsy

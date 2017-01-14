@@ -6,11 +6,15 @@
 (in-package cl4l-coro)
 
 (defmacro coro-return (&optional result)
+  ;; Signals CORO-RETURN with RESULT
   `(restart-case 
        (signal 'coro-return :result ,result)
      (coro-resume ())))
 
 (defmacro do-coro ((var expr) &body body)
+  ;; Executes BODY for every CORO-RETURN
+  ;; caused by evaluating EXPR,
+  ;; with VAR bound to the returned result
   (with-symbols (_c)
     `(handler-bind ((coro-return
                       (lambda (,_c)
