@@ -17,7 +17,7 @@ Welcome to cl4l. The project supports asdf and may be loaded by calling ```(ql:q
 ```table.lisp``` implements optionally composite key/transacted tables with update support.
 
 ### tests
-```test.lisp``` implements a test framework based on the idea of using tags to group and trigger tests dynamically.
+```test.lisp``` implements a test framework using tags to group and trigger tests dynamically.
 
 ### license
 MIT
