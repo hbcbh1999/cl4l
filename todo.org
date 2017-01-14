@@ -2,6 +2,7 @@
 ** encapsulate cont in outer with macro
 *** rename with-iter to do-iter
 ** remove iter.lisp and rename cont-iter
+** convert table to new iter api
 * add table & index events
 ** event.lisp
 * generalize (table-index) to (table-(un)depend self on)
