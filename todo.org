@@ -1,3 +1,5 @@
+* add perf comparison between returning list, iter struct and coro
+** post?
 * rename it to rec in index.lisp
 * add support for index streams like table
 * change table idxs to use table key as rec
