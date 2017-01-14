@@ -1,3 +1,7 @@
+* finish cont-iter
+** encapsulate cont in outer with macro
+*** rename with-iter to do-iter
+** remove iter.lisp and rename cont-iter
 * add table & index events
 ** event.lisp
 * generalize (table-index) to (table-(un)depend self on)
@@ -7,7 +11,7 @@
 * add support for index streams like table
 * change table idxs to use table key as rec
 * add fifo + channel
-** base on sbcl fifo + atomic/semaphore
+** base on fifo + sbcl atomic/semaphore
 * add index iter like table
 * add tag based logging
 * add db.lisp
