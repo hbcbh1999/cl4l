@@ -15,12 +15,6 @@
                      ,result)))
        ,@body)))
 
-(defmacro critter-yield (context &optional result)
-  (with-symbols (_context)
-    `(cl-cont:let/cc ,_context
-       (setf ,context ,_context)
-       ,result)))
-
 (defmacro with-critter ((context expr) &body body)
   ;; Executes BODY with EXPR bound to optional NAME,
   ;; hard coded synonyms are provided for anonymous use.
