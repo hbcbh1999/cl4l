@@ -1,9 +1,9 @@
+* change table index subscribe to use table key as rec
 * add support for index streams like table
-* change table idxs to use table key as rec
+* add index iter like table
 * --- vicsy rc capac
 * add fifo + channel
 ** base on fifo + sbcl atomic/semaphore
-* add index iter like table
 * add tag based logging
 * add db.lisp
 ** multi threaded
