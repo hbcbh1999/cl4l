@@ -1,5 +1,4 @@
 * add table & index events
-** event.lisp
 * generalize (table-index) to (table-(un)depend self on)
 ** support both tables & indexes
 ** hook into events

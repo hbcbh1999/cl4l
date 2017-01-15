@@ -5,6 +5,7 @@
   :serial t
   :components ((:file "cl4l")
                (:file "utils")
+               (:file "event")
                (:file "index")
                (:file "test")
                (:file "iter")
