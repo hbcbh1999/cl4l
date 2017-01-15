@@ -11,9 +11,9 @@
   `(test (list ,@tags) (lambda () ,@body)))
 
 (defun test (tags fn &key (suite *suite*))
-  (let ((found (index-find suite tags)))
-    (if found
-        (rplacd found fn)
+  (let ((found? (index-find suite tags)))
+    (if found?
+        (rplacd found? fn)
         (index-add suite (cons tags fn)))))
 
 (defun untest (tags &key (suite *suite*))

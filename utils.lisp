@@ -24,7 +24,9 @@
 
   (:method ((x list) y)
     (do ((xi x (rest xi)) (yi y (rest yi)))
-	((and (null xi) (null yi)) 0)
+	((and (null xi) (null yi)) 0
+         (null xi) -1
+         (null yi) 1)
       (let ((cmp (compare (first xi) (first yi))))
 	(unless (zerop cmp)
 	  (return cmp)))))
