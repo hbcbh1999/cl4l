@@ -4,10 +4,12 @@
            index-diff index-find index-first index-insert
            index-join index-key
            index-last index-length index-match index-merge
+           index-on-add index-on-remove
            index-prev index-remove index-rollback
+           index-subscribe
            with-index-trans *index-trans*)
   (:shadowing-import-from cl4l-utils compare key-gen with-symbols)
-  (:use cl))
+  (:use cl cl4l-event))
 
 (in-package cl4l-index)
 
@@ -27,7 +29,13 @@
          (index-rollback)))))
 
 (defstruct (index (:conc-name idx-) (:constructor make-idx)) 
-  head key-gen (length 0) tail (unique? t))
+  head
+  key-gen
+  (length 0)
+  (on-add (make-event))
+  (on-remove (make-event))
+  tail
+  (unique? t))
 
 (defstruct (ch)
   op index key rec)
@@ -143,9 +151,10 @@
     (unless (and found?
                  (or (idx-unique? self)
                      (eq rec (second prev))))
+      (event-publish (idx-on-add self) rec)
       (when trans
         (push (make-ch :op :add :index self :key key :rec rec)
-              (rest trans)))   
+              (rest trans)))
       (index-insert self prev rec))))
 
 (defun index-delete (self prev)
@@ -157,16 +166,25 @@
     (decf (idx-length self))
     rec))
 
+(defun index-on-add (self)
+  (idx-on-add self))
+
+(defun index-on-remove (self)
+  (idx-on-remove self))
+
 (defun index-remove (self key &key rec start (trans *index-trans*))
   ;; Removes KEY/REC from SELF after START and returns prev
   (multiple-value-bind (prev found?) 
       (index-prev self key :rec rec :start start)
     (when found?
+      (event-publish (idx-on-remove self) rec)
+
       (when trans
         (push (make-ch :op :remove
                        :index self
                        :key key :rec (second prev))
               (rest trans)))
+
       (index-delete self prev))))
 
 (defun index-match (self other &key prev-match)
@@ -257,6 +275,17 @@
                     :key (ch-key ch)
                     :trans nil))))
     (index-trans-reset trans)))
+
+(defgeneric index-subscribe (self sub)
+  (:method (self (sub index))
+    (event-subscribe (idx-on-add self)
+                     (lambda (rec)
+                       (index-add sub rec)))
+    
+    (event-subscribe (idx-on-remove self)
+                     (lambda (rec)
+                       (index-remove sub (index-key sub rec))))
+    sub))
 
 (defmethod compare ((x index) y)
   (compare (index-first x) (index-first y)))

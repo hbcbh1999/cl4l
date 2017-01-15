@@ -1,8 +1,3 @@
-* add index events
-* generalize (table-index) to (table-(un)depend self on)
-** support both tables & indexes
-** hook into events
-* add (index-(un)depend self on)
 * add support for index streams like table
 * change table idxs to use table key as rec
 * --- vicsy rc capac

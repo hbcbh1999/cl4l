@@ -5,7 +5,8 @@
            table-diff table-dump
            table-find table-iter table-join
            table-merge table-key
-           table-length table-prev? table-read table-rollback
+           table-length table-on-delete table-on-upsert
+           table-prev? table-read table-rollback
            table-slurp table-subscribe table-upsert table-write
            with-table-trans *table-trans*)
   (:shadowing-import-from cl4l-utils compare do-hash-table
@@ -135,6 +136,16 @@
                        (table-delete sub rec)))
     sub))
 
+(defmethod index-subscribe (idx (self table))
+  (event-subscribe (index-on-add idx)
+                   (lambda (rec)
+                     (table-upsert self rec)))
+
+  (event-subscribe (index-on-remove idx)
+                   (lambda (rec)
+                     (table-delete self rec)))
+  self)
+
 (defun table-iter (self)
   (do-hash-table ((tbl-recs self) key rec)
     (let ((prev (gethash rec (tbl-prev self))))
@@ -171,6 +182,8 @@
   (with-table-trans (:trans trans)
     (let ((key (table-key self rec))
           (prev (gethash rec (tbl-prev self))))
+      (event-publish (tbl-on-upsert self) rec prev)
+
       (if trans
           (push (make-ch :op :upsert
                          :tbl self
@@ -181,7 +194,6 @@
             (table-write self :upsert (or prev rec)
                               :stream stream)))
     
-      (event-publish (tbl-on-upsert self) rec prev)
       (setf (gethash key (tbl-recs self)) rec)
       (setf (gethash rec (tbl-prev self)) (clone-record rec))))
   rec)
