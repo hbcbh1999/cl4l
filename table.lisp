@@ -136,15 +136,15 @@
                        (table-delete sub rec)))
     sub))
 
-(defmethod index-subscribe (idx (self table))
-  (event-subscribe (index-on-add idx)
+(defmethod index-subscribe (self (sub table))
+  (event-subscribe (index-on-add self)
                    (lambda (rec)
-                     (table-upsert self rec)))
+                     (table-upsert sub rec)))
 
-  (event-subscribe (index-on-remove idx)
+  (event-subscribe (index-on-remove self)
                    (lambda (rec)
-                     (table-delete self rec)))
-  self)
+                     (table-delete sub rec)))
+  sub)
 
 (defun table-iter (self)
   (do-hash-table ((tbl-recs self) key rec)
