@@ -168,7 +168,7 @@
               (index-remove idx (index-key idx prev)))
             (index-add idx rec))))
 
-      (event-publish (tbl-on-upsert self) self rec)
+      (event-publish (tbl-on-upsert self) self rec prev)
       (setf (gethash key (tbl-recs self)) rec)
       (setf (gethash rec (tbl-prev self)) (clone-record rec))))
   rec)
@@ -191,7 +191,7 @@
             (dolist (idx (tbl-idxs self))
               (index-remove idx (index-key idx prev))))
           
-          (event-publish (tbl-on-delete self) self rec)
+          (event-publish (tbl-on-delete self) self rec prev)
           (remhash key (tbl-recs self))
           (remhash rec (tbl-prev self))))
       prev)))
@@ -289,8 +289,8 @@
 (define-test (:table :upsert :event)
   (let ((calls 0)
         (tbl (make-table)))
-    (flet ((fn (tbl rec &key)
-             (declare (ignore tbl rec))
+    (flet ((fn (tbl rec prev)
+             (declare (ignore tbl rec prev))
              (incf calls)))
       (event-subscribe (table-on-upsert tbl) #'fn))
     (dotimes (i test-max)
