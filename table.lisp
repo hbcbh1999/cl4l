@@ -191,7 +191,7 @@
                          :prev prev)
                 (rest  trans))
           (when-let (stream (tbl-stream self))
-            (table-write self :upsert (or prev rec)
+            (table-write self :upsert rec
                               :stream stream)))
     
       (setf (gethash key (tbl-recs self)) rec)
