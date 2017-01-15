@@ -20,6 +20,7 @@
 (defvar *table-trans* nil)
 
 (defmacro do-table ((expr key rec prev) &body body)
+  ;; Iterates body with KEY, REC & PREV from EXPR
   (with-symbols (_it)
     `(do-iter (,expr ,_it)
        (let* ((,key (first ,_it))
@@ -145,6 +146,7 @@
   sub)
 
 (defun table-iter (self)
+  ;; Executes new iterator for SELF
   (do-hash-table ((tbl-recs self) key rec)
     (let ((prev (gethash rec (tbl-prev self))))
       (iter-yield (cons key (cons rec prev))))))

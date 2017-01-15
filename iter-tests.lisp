@@ -10,7 +10,7 @@
            (dotimes (i max)
              (iter-yield i))))
     (let ((j 0))
-      (with-iter nil (foo test-max)
+      (with-iter ((foo test-max))
         (assert (= j (iter-result)))
         (incf j)
         (iter-next)))))

@@ -20,6 +20,7 @@
 (defvar *index-trans* nil)
 
 (defmacro do-index ((expr rec) &body body)
+  ;; Iterates body with REC from EXPR
   `(do-iter (,expr ,rec)
      ,@body))
 
@@ -182,6 +183,7 @@
   (idx-on-add self))
 
 (defun index-iter (self &key (start (idx-head self)))
+  ;; Executes new iterator for SELF from START
   (dolist (rec start)
     (iter-yield rec)))
 

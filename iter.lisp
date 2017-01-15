@@ -6,8 +6,8 @@
 (in-package cl4l-iter)
 
 (defmacro do-iter ((expr it) &body body)
-  ;; Executes body with IT bound to items from EXPR
-  `(with-iter nil ,expr
+  ;; Iterates body with IT bound to items from EXPR
+  `(with-iter (,expr)
      (let ((,it (iter-result)))
        ,@body)
      (iter-next)))
@@ -18,9 +18,9 @@
        (signal 'iter-yield :result ,result)
      (iter-next ())))
 
-(defmacro with-iter (name expr &body body)
+(defmacro with-iter ((expr &key name) &body body)
   ;; Executes BODY with EXPR bound to optional NAME,
-  ;; ITER-aliases are provided for anonymous use.
+  ;; aliases are provided for anonymous use.
   (let* ((_c (gensym))
          (_name (or name (gensym)))
          (_result (symbol! _name '-result)))
