@@ -26,7 +26,7 @@
                 ,_res))
          (index-rollback)))))
 
-(defstruct (idx) 
+(defstruct (index (:conc-name idx-) (:constructor make-idx)) 
   head key-gen (length 0) tail (unique? t))
 
 (defstruct (ch)
@@ -258,5 +258,5 @@
                     :trans nil))))
     (index-trans-reset trans)))
 
-(defmethod compare ((x idx) y)
+(defmethod compare ((x index) y)
   (compare (index-first x) (index-first y)))

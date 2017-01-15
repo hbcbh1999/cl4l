@@ -3,10 +3,10 @@
            make-table make-table-trans
            table table-clone table-commit table-delete
            table-diff table-dump
-           table-find table-index table-iter table-join
+           table-find table-iter table-join
            table-merge table-key
            table-length table-prev? table-read table-rollback
-           table-slurp table-upsert table-write
+           table-slurp table-subscribe table-upsert table-write
            with-table-trans *table-trans*)
   (:shadowing-import-from cl4l-utils compare do-hash-table
                           key-gen when-let
@@ -41,8 +41,7 @@
                 ,_res))
          (table-rollback)))))
 
-(defstruct (tbl)
-  idxs
+(defstruct (table (:conc-name tbl-) (:constructor make-tbl))
   key-gen
   (on-delete (make-event))
   (on-upsert (make-event))
@@ -111,9 +110,30 @@
   ;; or NIL if not found.
   (gethash key (tbl-recs self)))
 
-(defun table-index (self idx)
-  (setf (tbl-idxs self) (adjoin idx (tbl-idxs self)))
-  idx)
+(defgeneric table-subscribe (self sub)
+  (:method (self (sub index))
+    (event-subscribe (tbl-on-upsert self)
+                     (lambda (rec prev)
+                       (when prev
+                         (index-remove sub (index-key sub prev)))
+                       (index-add sub rec)))
+    
+    (event-subscribe (tbl-on-delete self)
+                     (lambda (rec prev)
+                       (declare (ignore rec))
+                       (index-remove sub (index-key sub prev))))
+    sub)
+  (:method (self (sub table))
+    (event-subscribe (tbl-on-upsert self)
+                     (lambda (rec prev)
+                       (declare (ignore prev))
+                       (table-upsert sub rec)))
+
+    (event-subscribe (tbl-on-delete self)
+                     (lambda (rec prev)
+                       (declare (ignore prev))
+                       (table-delete sub rec)))
+    sub))
 
 (defun table-iter (self)
   (do-hash-table ((tbl-recs self) key rec)
@@ -161,14 +181,7 @@
             (table-write self :upsert (or prev rec)
                               :stream stream)))
     
-      (when (tbl-idxs self)
-        (let ((prev (gethash rec (tbl-prev self))))
-          (dolist (idx (tbl-idxs self))
-            (when prev
-              (index-remove idx (index-key idx prev)))
-            (index-add idx rec))))
-
-      (event-publish (tbl-on-upsert self) self rec prev)
+      (event-publish (tbl-on-upsert self) rec prev)
       (setf (gethash key (tbl-recs self)) rec)
       (setf (gethash rec (tbl-prev self)) (clone-record rec))))
   rec)
@@ -186,12 +199,8 @@
                     (rest trans))
               (when-let (stream (tbl-stream self))
                 (table-write self :delete prev :stream stream)))
-        
-          (when (tbl-idxs self)
-            (dolist (idx (tbl-idxs self))
-              (index-remove idx (index-key idx prev))))
-          
-          (event-publish (tbl-on-delete self) self rec prev)
+                  
+          (event-publish (tbl-on-delete self) rec prev)
           (remhash key (tbl-recs self))
           (remhash rec (tbl-prev self))))
       prev)))
@@ -289,8 +298,8 @@
 (define-test (:table :upsert :event)
   (let ((calls 0)
         (tbl (make-table)))
-    (flet ((fn (tbl rec prev)
-             (declare (ignore tbl rec prev))
+    (flet ((fn (rec prev)
+             (declare (ignore rec prev))
              (incf calls)))
       (event-subscribe (table-on-upsert tbl) #'fn))
     (dotimes (i test-max)
