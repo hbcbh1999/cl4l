@@ -34,7 +34,8 @@
     (with-critter (context (funcall foo test-max))
       (assert (= j critter-result))
       (incf j)
-      (critter-next))))
+      (critter-next))
+    (assert (= test-max j))))
 
 (define-test (:critter :list)
   (flet ((foo (max)

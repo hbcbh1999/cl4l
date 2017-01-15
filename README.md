@@ -7,9 +7,6 @@ Welcome to cl4l. The project supports asdf and may be loaded by calling ```(ql:q
 ### memoization
 ```memoize.lisp``` implements general purpose memoization of arbitrary, potentially parameterized expressions.
 
-### iterators
-```iter.lisp``` implements iterators based on cl-cont that allow implementing fast, general purpose iterators with continuous iteration logic. They are several thousand times faster than consing/reversing 100k lists; while supporting infinite lists without freaking out; and side stepping call site confusion about who owns what..
-
 ### indexes
 ```index.lisp``` implements ordered, optionally composite key/transacted/unique indexes that offer significantly (currently hovering above 10x) better performance for set operations.
 
