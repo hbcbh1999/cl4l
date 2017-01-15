@@ -21,14 +21,12 @@
 
 (defmacro do-table ((expr key rec prev) &body body)
   (with-symbols (_it)
-    `(with-iter nil ,expr
-       (let* ((,_it (iter-result))
-              (,key (first ,_it))
+    `(do-iter (,expr ,_it)
+       (let* ((,key (first ,_it))
               (,rec (second ,_it))
               (,prev (nthcdr 2 ,_it)))
          (declare (ignorable ,key ,rec ,prev))
-         ,@body)
-       (iter-next))))
+         ,@body))))
 
 (defmacro with-table-trans ((&key trans) &body body)
   ;; Executes BODY in transaction that is automatically

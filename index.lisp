@@ -20,10 +20,8 @@
 (defvar *index-trans* nil)
 
 (defmacro do-index ((expr rec) &body body)
-  `(with-iter nil ,expr
-     (let ((,rec (iter-result)))
-       ,@body)
-     (iter-next)))
+  `(do-iter (,expr ,rec)
+     ,@body))
 
 (defmacro with-index-trans ((&key trans) &body body)
   ;; Executes BODY in transaction that is automatically

@@ -1,9 +1,15 @@
 (defpackage cl4l-iter
-  (:export iter-next iter-result iter-yield with-iter)
+  (:export do-iter iter-next iter-result iter-yield with-iter)
   (:shadowing-import-from cl4l-utils symbol! with-symbols)
   (:use cl))
 
 (in-package cl4l-iter)
+
+(defmacro do-iter ((expr it) &body body)
+  `(with-iter nil ,expr
+     (let ((,it (iter-result)))
+       ,@body)
+     (iter-next)))
 
 (defmacro iter-yield (&optional result)
   ;; Signals ITER-yield with RESULT

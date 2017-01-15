@@ -1,6 +1,3 @@
-* rename store/clone-record to record-store/clone
-** add record.lisp & move methods
-** update vicsy
 * --- vicsy rc capac
 * add stream &key params to all streaming fns in table/index
 * add fifo + channel
