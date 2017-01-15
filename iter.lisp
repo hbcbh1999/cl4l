@@ -1,7 +1,7 @@
 (defpackage cl4l-iter
   (:export iter-next iter-result iter-yield with-iter)
   (:shadowing-import-from cl4l-utils symbol! with-symbols)
-  (:use cl cl4l-test))
+  (:use cl))
 
 (in-package cl4l-iter)
 
@@ -31,25 +31,3 @@
 
 (define-condition iter-yield (condition)
   ((result :initarg :result :reader result)))
-
-(defparameter test-max 100000)
-
-(define-test (:iter :cond)
-  (flet ((foo (max)
-           (dotimes (i max)
-             (iter-yield i))))
-    (let ((j 0))
-      (with-iter nil (foo test-max)
-        (assert (= j (iter-result)))
-        (incf j)
-        (iter-next)))))
-
-(define-test (:iter :list)
-  (flet ((foo (max)
-           (let ((res))
-             (dotimes (i max)
-               (push i res))
-             (nreverse res))))
-    (let ((res (foo test-max)))
-      (dotimes (j test-max)
-        (assert (= (pop res) j))))))

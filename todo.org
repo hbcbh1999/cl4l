@@ -1,6 +1,4 @@
-* change table index subscribe to use table key as rec
 * add support for index streams like table
-* add index iter like table
 * --- vicsy rc capac
 * add fifo + channel
 ** base on fifo + sbcl atomic/semaphore
