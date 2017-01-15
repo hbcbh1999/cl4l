@@ -1,5 +1,5 @@
 (defpackage cl4l-critter
-  (:export critter-next critter-yield with-critter)
+  (:export critter-next critter-yield do-critter with-critter)
   (:shadowing-import-from cl4l-utils symbol! with-symbols)
   (:shadowing-import-from cl-cont lambda/cc)
   (:use cl cl4l-test))
@@ -12,7 +12,7 @@
        (setf ,cont ,_cont)
        ,result)))
 
-(defmacro with-critter ((cont expr) &body body)
+(defmacro do-critter ((cont expr) &body body)
   ;; Executes BODY with EXPR bound to optional NAME,
   ;; hard coded synonyms are provided for anonymous use.
   `(let ((critter-result ,expr))
@@ -23,6 +23,7 @@
 
 (defparameter test-max 100000)
 
+;; todo add with-critter macro to encapsulate lambda/cc && cont
 
 (define-test (:critter)
   (let* ((cont)
@@ -30,7 +31,7 @@
                 (dotimes (i max)
                   (critter-yield cont i))))
          (j 0))
-    (with-critter (cont (funcall foo test-max))
+    (do-critter (cont (funcall foo test-max))
         (assert (= j critter-result))
       (incf j)
       (critter-next))))

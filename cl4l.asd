@@ -9,7 +9,7 @@
                (:file "index")
                (:file "test")
                (:file "iter")
-               (:file "cont-iter")
+               (:file "critter")
                (:file "table")
                (:file "memoize")
                (:file "index-tests")
