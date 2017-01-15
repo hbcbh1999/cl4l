@@ -1,12 +1,12 @@
 (defpackage cl4l-index
-  (:export make-index make-index-trans
+  (:export do-index
            index index-add index-clone index-commit index-delete
            index-diff index-find index-first index-insert
-           index-join index-key
+           index-iter index-join index-key
            index-last index-length index-match index-merge
            index-on-add index-on-remove
            index-prev index-remove index-rollback
-           index-subscribe
+           index-subscribe make-index make-index-trans
            with-index-trans *index-trans*)
   (:shadowing-import-from cl4l-utils compare key-gen with-symbols)
   (:use cl cl4l-event cl4l-iter))
