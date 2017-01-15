@@ -20,15 +20,13 @@
     `(macrolet ((,(symbol! _name '-next) ()
                   `(invoke-restart 'iter-next))
                 (iter-next ()
-                  `(,(symbol! ',_name '-next))))
+                  `(,(symbol! ',_name '-next)))
+                (,_result () `(result ,',_c))
+                (iter-result () `(,',_result)))
        (handler-bind ((iter-yield
                         (lambda (,_c)
-                          ;;todo replace with symbol-macrolet
-                          (let* ((,_result (result ,_c))
-                                 (iter-result ,_result))
-                            (declare (ignorable ,_result
-                                                iter-result))
-                            ,@body))))
+                          (declare (ignorable ,_c))
+                          ,@body)))
          ,expr))))
 
 (define-condition iter-yield (condition)
@@ -42,7 +40,7 @@
              (iter-yield i))))
     (let ((j 0))
       (with-iter nil (foo test-max)
-        (assert (= j iter-result))
+        (assert (= j (iter-result)))
         (incf j)
         (iter-next)))))
 

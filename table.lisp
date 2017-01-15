@@ -1,5 +1,5 @@
 (defpackage cl4l-table
-  (:export clone-record do-table-iter
+  (:export clone-record do-table
            make-table make-table-trans
            table table-clone table-commit table-delete
            table-diff table-dump
@@ -19,10 +19,10 @@
 ;; Default trans
 (defvar *table-trans* nil)
 
-(defmacro do-table-iter ((expr key rec prev) &body body)
+(defmacro do-table ((expr key rec prev) &body body)
   (with-symbols (_it)
     `(with-iter nil ,expr
-       (let* ((,_it iter-result)
+       (let* ((,_it (iter-result))
               (,key (first ,_it))
               (,rec (second ,_it))
               (,prev (nthcdr 2 ,_it)))
@@ -301,7 +301,7 @@
       (table-upsert tbl i))
     
     (let ((its))
-      (do-table-iter ((table-iter tbl) key rec prev)
+      (do-table ((table-iter tbl) key rec prev)
         (setf its (adjoin key its :test #'=)))
 
       (dotimes (i test-max)

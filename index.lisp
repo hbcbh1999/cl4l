@@ -9,12 +9,18 @@
            index-subscribe
            with-index-trans *index-trans*)
   (:shadowing-import-from cl4l-utils compare key-gen with-symbols)
-  (:use cl cl4l-event))
+  (:use cl cl4l-event cl4l-iter))
 
 (in-package cl4l-index)
 
 ;; Default trans
 (defvar *index-trans* nil)
+
+(defmacro do-index ((expr rec) &body body)
+  `(with-iter nil ,expr
+     (let ((,rec (iter-result)))
+       ,@body)
+     (iter-next)))
 
 (defmacro with-index-trans ((&key trans) &body body)
   ;; Executes BODY in transaction that is automatically
@@ -168,6 +174,10 @@
 
 (defun index-on-add (self)
   (idx-on-add self))
+
+(defun index-iter (self &key (start (idx-head self)))
+  (dolist (rec start)
+    (iter-yield rec)))
 
 (defun index-on-remove (self)
   (idx-on-remove self))
