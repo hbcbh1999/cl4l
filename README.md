@@ -8,7 +8,7 @@ Welcome to cl4l. The project supports asdf and may be loaded by calling ```(ql:q
 ```memoize.lisp``` implements general purpose memoization of arbitrary, potentially parameterized expressions.
 
 ### indexes
-```index.lisp``` implements ordered, optionally composite key/transacted/unique indexes that offer significantly (currently hovering above 10x) better performance for set operations.
+```index.lisp``` implements ordered, optionally composite key/transacted/unique indexes that offer significantly (currently hovering above 10x) better performance for set operations than built-in set functionality.
 
 ### tables
 ```table.lisp``` implements hashed, optionally composite key/transacted tables with set operations, index-/update and i/o support. Tables are roughly 20% faster than indexes, despite added book keeping for update support.
