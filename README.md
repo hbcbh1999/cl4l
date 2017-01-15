@@ -14,7 +14,7 @@ Welcome to cl4l. The project supports asdf and may be loaded by calling ```(ql:q
 ```table.lisp``` implements hashed, optionally composite key/transacted tables with set operations, event hooks, index-/update and i/o support. Tables are roughly 20% faster than indexes, despite added book keeping for update support.
 
 ### iterators
-```iter.lisp``` implements poor man's coroutines using conditions and restarts. They are currently around 10x slower than consing and reversing lists; while supporting infinite lists without freaking out; and side stepping call site confusion about who owns what.
+```iter.lisp``` implements an extensible iterator protocol on top of coroutines using conditions and restarts. They are currently around 10x slower than consing and reversing lists; while supporting infinite lists without freaking out; and side stepping call site confusion about who owns what.
 
 ### tests
 ```test.lisp``` implements a test framework using tags to group and trigger tests dynamically.
