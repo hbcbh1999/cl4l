@@ -6,6 +6,7 @@
 (in-package cl4l-iter)
 
 (defmacro do-iter ((expr it) &body body)
+  ;; Executes body with IT bound to items from EXPR
   `(with-iter nil ,expr
      (let ((,it (iter-result)))
        ,@body)
