@@ -1,7 +1,6 @@
 (defpackage cl4l-iter
   (:export iter-next iter-result iter-yield with-iter)
   (:shadowing-import-from cl4l-utils symbol! with-symbols)
-  (:shadowing-import-from cl-cont lambda/cc)
   (:use cl cl4l-test))
 
 (in-package cl4l-iter)
@@ -55,15 +54,3 @@
     (let ((res (foo test-max)))
       (dotimes (j test-max)
         (assert (= (pop res) j))))))
-
-(define-test (:iter :cont)
-  (let*  ((cont)
-          (foo (lambda/cc (max)
-                 (dotimes (i max)
-                   (cl-cont:let/cc _cont
-                     (setf cont _cont)
-                     i)))))
-    (dotimes (j test-max)
-      (assert (= j (if (zerop j)
-                       (funcall foo test-max)
-                       (funcall cont)))))))
