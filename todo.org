@@ -1,4 +1,5 @@
 * add support for index streams like table
+* rename store/clone-record to record-store/clone
 * --- vicsy rc capac
 * add fifo + channel
 ** base on fifo + sbcl atomic/semaphore
