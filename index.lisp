@@ -12,7 +12,7 @@
 (in-package cl4l-index)
 
 ;; Default trans
-(defvar *index-trans* nil)
+(defvar *index-trans*)
 
 (defmacro with-index-trans ((&key trans) &body body)
   ;; Executes BODY in transaction that is automatically

@@ -16,7 +16,7 @@
 (in-package cl4l-table)
 
 ;; Default trans
-(defvar *table-trans* nil)
+(defvar *table-trans*)
 
 (defmacro do-table-iter ((expr key rec prev) &body body)
   (with-symbols (_it)
