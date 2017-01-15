@@ -9,6 +9,7 @@
                (:file "iter")
                (:file "index")
                (:file "test")
+               (:file "record")
                (:file "table")
                (:file "memoize")
                (:file "event-tests")

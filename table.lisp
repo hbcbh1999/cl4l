@@ -1,5 +1,5 @@
 (defpackage cl4l-table
-  (:export clone-record do-table
+  (:export do-table
            make-table make-table-trans
            table table-clear table-clone table-commit table-delete
            table-diff table-dump
@@ -12,7 +12,7 @@
   (:shadowing-import-from cl4l-utils compare do-hash-table
                           key-gen when-let
                           with-symbols)
-  (:use cl cl4l-event cl4l-iter cl4l-index))
+  (:use cl cl4l-event cl4l-iter cl4l-index cl4l-record))
 
 (in-package cl4l-table)
 
@@ -195,7 +195,7 @@
                               :stream stream)))
     
       (setf (gethash key (tbl-recs self)) rec)
-      (setf (gethash rec (tbl-prev self)) (clone-record rec))))
+      (setf (gethash rec (tbl-prev self)) (record-clone rec))))
   rec)
 
 (defun table-delete (self rec &key (trans *table-trans*))
@@ -256,9 +256,3 @@
    next
      (when (table-read self :stream stream)
        (go next))))
-
-(defgeneric clone-record (self)
-  (:method (self)
-    self)
-  (:method ((self list))
-    (copy-list self)))
