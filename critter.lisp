@@ -1,5 +1,6 @@
 (defpackage cl4l-critter
-  (:export critter critter-next critter-yield with-critter)
+  (:export critter critter-next critter-result critter-yield
+           with-critter)
   (:shadowing-import-from cl4l-utils symbol! with-symbols)
   (:shadowing-import-from cl-cont lambda/cc)
   (:use cl cl4l-test))
@@ -9,10 +10,9 @@
 (defmacro critter ((context args) &body body)
   `(lambda/cc ,args
      (macrolet ((critter-yield (&optional result)
-                  (let ((_context ',context))
-                    `(cl-cont:let/cc c
-                       (setf ,_context c)
-                       ,result))))
+                  `(cl-cont:let/cc c
+                     (setf ,',context c)
+                     ,result)))
        ,@body)))
 
 (defmacro critter-yield (context &optional result)
@@ -26,8 +26,7 @@
   ;; hard coded synonyms are provided for anonymous use.
   `(let ((critter-result ,expr))
      (macrolet ((critter-next ()
-                  (let ((_context ',context))
-                    `(setf critter-result (funcall ,_context)))))
+                  `(setf critter-result (funcall ,',context))))
        ,@body)))
   
 (defparameter test-max 100000)

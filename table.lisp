@@ -11,7 +11,7 @@
   (:shadowing-import-from cl4l-utils compare do-hash-table
                           key-gen when-let
                           with-symbols)
-  (:use cl cl4l-critter cl4l-index cl4l-test))
+  (:use cl cl4l-iter cl4l-index cl4l-test))
 
 (in-package cl4l-table)
 
