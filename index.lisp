@@ -1,14 +1,17 @@
 (defpackage cl4l-index
   (:export do-index
            index index-add index-clone index-commit index-delete
-           index-diff index-find index-first index-insert
+           index-diff index-dump index-find index-first
+           index-insert
            index-iter index-join index-key
            index-last index-length index-match index-merge
            index-on-add index-on-remove
-           index-prev index-remove index-rollback
-           index-subscribe make-index make-index-trans
+           index-prev index-read index-remove index-rollback
+           index-slurp
+           index-subscribe index-write make-index make-index-trans
            with-index-trans *index-trans*)
-  (:shadowing-import-from cl4l-utils compare key-gen with-symbols)
+  (:shadowing-import-from cl4l-utils compare key-gen when-let
+                          with-symbols)
   (:use cl cl4l-event cl4l-iter))
 
 (in-package cl4l-index)
@@ -40,21 +43,24 @@
   (length 0)
   (on-add (make-event))
   (on-remove (make-event))
+  stream
   tail
   (unique? t))
 
 (defstruct (ch)
-  op index key rec)
+  op idx key rec)
 
 (defun make-index (&key key
                         key-gen
                         (head (list nil))
+                        stream
                         tail
                         (length 0)
                         (unique? t))
   ;; Returns a new index from ARGS
   (make-idx :key-gen (or key-gen (key-gen key))
             :head head
+            :stream stream
             :tail (or tail (last head))
             :length length
             :unique? unique?))
@@ -158,9 +164,11 @@
                  (or (idx-unique? self)
                      (eq rec (second prev))))
       (event-publish (idx-on-add self) rec)
-      (when trans
-        (push (make-ch :op :add :index self :key key :rec rec)
-              (rest trans)))
+      (if trans
+        (push (make-ch :op :add :idx self :key key :rec rec)
+              (rest trans))
+        (when-let (stream (idx-stream self))
+          (index-write self :add rec :stream stream)))
       (index-insert self prev rec))))
 
 (defun index-delete (self prev)
@@ -189,12 +197,13 @@
     (when found?
       (event-publish (idx-on-remove self) rec)
 
-      (when trans
+      (if trans
         (push (make-ch :op :remove
-                       :index self
+                       :idx self
                        :key key :rec (second prev))
-              (rest trans)))
-
+              (rest trans))
+        (when-let (stream (idx-stream self))
+          (index-write self :remove found? :stream stream)))
       (index-delete self prev))))
 
 (defun index-match (self other &key prev-match)
@@ -245,6 +254,10 @@
     (when m (index-delete self (first m)))
     (unless m (return self))))
 
+(defun index-dump (self &key (stream (idx-stream self)))
+  (dolist (rec (index-first self) self)
+    (index-write self :add rec :stream stream)))
+
 (defun index-merge (self other)
   ;; Adds all records from OTHER that are not found in SELF and
   ;; returns SELF.
@@ -269,7 +282,30 @@
 (defun index-commit (&key (trans *index-trans*))
   ;; Clears changes made in TRANS
   (when trans
+    (dolist (ch (nreverse (rest trans)))
+      (when-let (stream (idx-stream (ch-idx ch)))
+        (index-write (ch-idx ch)
+                     (ch-op ch)
+                     (ch-rec ch)
+                     :stream stream)))
+
     (index-trans-reset trans)))
+
+(defun index-read (self &key (stream (idx-stream self)))
+  (when-let (ln (read-line stream nil))
+    (let ((form (read-from-string ln)))
+      (ecase (first form)
+        (:add
+         (index-add self (rest form)))
+        (:remove
+         (index-remove self (rest form)))))
+    t))
+
+(defun index-slurp (self &key (stream (idx-stream self)))
+  (tagbody
+   next
+     (when (index-read self :stream stream)
+       (go next))))
 
 (defun index-rollback (&key (trans *index-trans*))
   ;; Rolls back and clears changes made in TRANS
@@ -277,11 +313,11 @@
     (dolist (ch (nreverse (rest trans)))
       (ecase (ch-op ch)
         (:add
-         (index-remove (ch-index ch) (ch-key ch)
+         (index-remove (ch-idx ch) (ch-key ch)
                        :rec (ch-rec ch)
                        :trans nil))
         (:remove
-         (index-add (ch-index ch) (ch-rec ch)
+         (index-add (ch-idx ch) (ch-rec ch)
                     :key (ch-key ch)
                     :trans nil))))
     (index-trans-reset trans)))
@@ -296,6 +332,13 @@
                      (lambda (rec)
                        (index-remove sub (index-key sub rec))))
     sub))
+
+(defun index-write (self op rec &key (stream (idx-stream self)))
+  (write (ecase op
+           (:add (cons op rec))
+           (:remove (cons op (index-key self rec))))
+         :stream stream)
+  (terpri stream))
 
 (defmethod compare ((x index) y)
   (compare (index-first x) (index-first y)))

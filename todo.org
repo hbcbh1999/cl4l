@@ -1,6 +1,8 @@
-* add support for index streams like table
 * rename store/clone-record to record-store/clone
+** add record.lisp & move methods
+** update vicsy
 * --- vicsy rc capac
+* add stream &key params to all streaming fns in table/index
 * add fifo + channel
 ** base on fifo + sbcl atomic/semaphore
 * add tag based logging
