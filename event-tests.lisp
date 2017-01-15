@@ -5,7 +5,7 @@
 
 (define-test (:event)
   (let ((evt (make-event)))
-    (flet ((sub (x y) (> x y)))
-      (event-subscribe evt #'sub)
-      (assert (event-publish evt 2 1))
-      (assert (null (event-publish evt 1 2))))))
+    (flet ((fn (x y) (> x y)))
+      (event-subscribe evt #'fn)
+      (assert (equal (event-publish evt 2 1) '(t)))
+      (assert (equal (event-publish evt 1 2) '(nil))))))

@@ -18,6 +18,4 @@
   (setf (evt-subs self) (remove fn (evt-subs self))))
 
 (defun event-publish (self &rest args)
-  (dolist (fn (evt-subs self) t)
-    (unless (apply fn args)
-      (return nil))))
+  (mapcar (lambda (fn) (apply fn args)) (evt-subs self)))
