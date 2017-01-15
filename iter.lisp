@@ -13,7 +13,7 @@
      (iter-next)))
 
 (defmacro iter-yield (&optional result)
-  ;; Signals ITER-yield with RESULT
+  ;; Signals ITER-YIELD with RESULT
   `(restart-case 
        (signal 'iter-yield :result ,result)
      (iter-next ())))
