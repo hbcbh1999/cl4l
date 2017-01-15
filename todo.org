@@ -1,4 +1,4 @@
-* add table & index events
+* add index events
 * generalize (table-index) to (table-(un)depend self on)
 ** support both tables & indexes
 ** hook into events
