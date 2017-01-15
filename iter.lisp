@@ -13,22 +13,23 @@
 
 (defmacro with-iter (name expr &body body)
   ;; Executes BODY with EXPR bound to optional NAME,
-  ;; hard coded synonyms are provided for anonymous use.
-  (with-symbols (_c)
-    (let* ((_name (or name (gensym)))
-           (_result (symbol! _name '-result)))
-      `(macrolet ((,(symbol! _name '-next) ()
-                    `(invoke-restart 'iter-next))
-                  (iter-next ()
-                    `(,(symbol! ',_name '-next))))
-         (handler-bind ((iter-yield
-                          (lambda (,_c)
-                            (let* ((,_result (result ,_c))
-                                  (iter-result ,_result))
-                              (declare (ignorable ,_result
-                                                  iter-result))
-                              ,@body))))
-           ,expr)))))
+  ;; ITER-aliases are provided for anonymous use.
+  (let* ((_c (gensym))
+         (_name (or name (gensym)))
+         (_result (symbol! _name '-result)))
+    `(macrolet ((,(symbol! _name '-next) ()
+                  `(invoke-restart 'iter-next))
+                (iter-next ()
+                  `(,(symbol! ',_name '-next))))
+       (handler-bind ((iter-yield
+                        (lambda (,_c)
+                          ;;todo replace with symbol-macrolet
+                          (let* ((,_result (result ,_c))
+                                 (iter-result ,_result))
+                            (declare (ignorable ,_result
+                                                iter-result))
+                            ,@body))))
+         ,expr))))
 
 (define-condition iter-yield (condition)
   ((result :initarg :result :reader result)))
