@@ -11,7 +11,7 @@
   (:shadowing-import-from cl4l-utils compare do-hash-table
                           key-gen when-let
                           with-symbols)
-  (:use cl cl4l-iter cl4l-index cl4l-test))
+  (:use cl cl4l-event cl4l-iter cl4l-index cl4l-test))
 
 (in-package cl4l-table)
 
@@ -44,6 +44,8 @@
 (defstruct (tbl)
   idxs
   key-gen
+  (on-delete (make-event))
+  (on-upsert (make-event))
   (prev (make-hash-table :test #'eq))
   recs
   stream)
@@ -138,6 +140,12 @@
 
 (defun table-length (self)
   (hash-table-count (tbl-recs self)))
+
+(defun table-on-delete (self)
+  (tbl-on-delete self))
+
+(defun table-on-upsert (self)
+  (tbl-on-upsert self))
 
 (defun table-upsert (self rec &key (trans *table-trans*))
   (let ((key (table-key self rec))
