@@ -1,3 +1,6 @@
+* add aes en/decryption
+* add table/index encryption
+** activate when password is specified
 * add tag based logging
 * add fifo + channel
 ** base on fifo + sbcl atomic/semaphore
