@@ -1,5 +1,9 @@
 * add table/index encryption
-** activate when password is specified
+** add database-password
+*** use as crypt key
+** add (setf database-password) to write path/password
+*** pbkdf2
+** add (database-login password) to authenticate
 * add tag based logging
 * add fifo + channel
 ** base on fifo + sbcl atomic/semaphore
