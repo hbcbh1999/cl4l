@@ -1,7 +1,3 @@
-* add aes en/decryption
-** crypt.lisp
-** ironclad
-** ctr mode
 * add table/index encryption
 ** activate when password is specified
 * add tag based logging
