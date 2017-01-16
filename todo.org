@@ -4,9 +4,9 @@
 ** copy iter to yield rest
 ** change table to store table keys as recs
 * add stream &key params to all streaming fns in table/index
+* add tag based logging
 * add fifo + channel
 ** base on fifo + sbcl atomic/semaphore
-* add tag based logging
 * add db.lisp
 ** multi threaded
 ** msg based
