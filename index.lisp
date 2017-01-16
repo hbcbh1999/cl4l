@@ -160,9 +160,7 @@
   ;; Adds REC to SELF after START and returns REC
   (multiple-value-bind (prev found?)
       (index-prev self key :rec rec :start start)
-    (unless (and found?
-                 (or (idx-unique? self)
-                     (eq rec (second prev))))
+    (unless found?
       (with-index-trans (:trans trans)
         (event-publish (idx-on-add self) rec))
       (if trans

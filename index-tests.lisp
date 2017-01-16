@@ -30,31 +30,33 @@
 
 (define-test (:index :multi)
   (let ((lst (make-index :key (cons #'first #'second)
-                         :unique? nil)))
-    (index-add lst '(1 2 3))
-    (index-add lst '(4 5 6))
+                         :unique? nil))
+        (foo '(1 2 3))
+        (baz '(4 5 6)))
+    (index-add lst foo)
+    (index-add lst baz)
     
     ;; Duplicate records are not allowed
-    (assert (null (index-add lst '(1 2 3))))
+    (assert (null (index-add lst foo)))
     
-    (let* ((rec '(1 2 4))
-           (key (index-key lst rec)))
+    (let* ((bar '(1 2 4))
+           (key (index-key lst bar)))
       ;; But same key in different record is fine
-      (assert (index-add lst rec))
+      (assert (index-add lst bar))
 
       ;; Records are sorted within the same key using
       ;; the same generic #'COMPARE as keys
       (let ((found (index-first lst :key key)))
-        (assert (eq '(1 2 3) (first found)))
-        (assert (eq rec (second found)))
-        (assert (equal '(4 5 6) (third found))))
+        (assert (eq foo (first found)))
+        (assert (eq bar (second found)))
+        (assert (eq baz (third found))))
 
       ;; The API supports optionally specifying record as well
       ;; as key, default is first record matching key
-      (assert (eq rec (index-find lst key :rec rec)))
-      (index-remove lst key :rec rec)
-      (assert (null (index-find lst key :rec rec)))
-      (assert (equal '(1 2 3) (index-find lst key))))))
+      (assert (eq bar (index-find lst key :rec bar)))
+      (index-remove lst key :rec bar)
+      (assert (null (index-find lst key :rec bar)))
+      (assert (eq foo (index-find lst key))))))
 
 (define-test (:index :trans)
   (let ((lst (index (cons #'rec-foo #'rec-bar))))

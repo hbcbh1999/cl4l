@@ -17,28 +17,25 @@
       (t 0)))
 
   (:method ((x cons) y)
-    (let ((cmp (compare (first x) (first y))))
-      (if (zerop cmp)
-          (compare (rest x) (rest y))
-          cmp)))
-
-  (:method ((x list) y)
-    (do ((xi x (rest xi)) (yi y (rest yi)))
-	((and (null xi) (null yi)) 0
-         (null xi) -1
-         (null yi) 1)
-      (let ((cmp (compare (first xi) (first yi))))
-	(unless (zerop cmp)
-	  (return cmp)))))
-
+    (let ((xrest (rest x)))
+      (if (consp xrest)
+          (do ((xi x (rest xi)) (yi y (rest yi)))
+              ((null yi) 1
+               (null xi) -1
+               (and (null xi) (null yi)) 0)
+            (let ((cmp (compare (first xi) (first yi))))
+              (unless (zerop cmp)
+                (return cmp))))
+          (let ((cmp (compare (first x) (first y))))
+            (if (and (zerop cmp) xrest)
+                (compare xrest (rest y))
+                cmp)))))
+  
   (:method ((x number) y)
     (cond
       ((< x y) -1)
       ((> x y) 1)
       (t 0)))
-
-  (:method ((x null) y)
-    (if (null y) 0 -1))
 
   (:method ((x string) y)
     (do ((i 0 (1+ i)))
