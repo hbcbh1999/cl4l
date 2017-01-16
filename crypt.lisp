@@ -1,5 +1,5 @@
 (defpackage cl4l-crypt
-  (:export decrypt encrypt make-aes make-iv sha256)
+  (:export decrypt encrypt make-crypt make-iv sha256)
   (:shadowing-import-from ironclad block-length
                           decrypt-in-place
                           digest-sequence
@@ -22,16 +22,16 @@
 (defmethod sha256 (phrase)
   (digest-sequence :sha256 (string-to-octets phrase)))
 
-(defun make-aes (phrase iv)
-  (make-cipher :aes :key (sha256 phrase) 
+(defun make-crypt (key iv)
+  (make-cipher :aes :key (sha256 key) 
                     :mode :ctr
                     :initialization-vector iv))
 
-(defun encrypt (cipher msg)
+(defun encrypt (self msg)
   (let ((bytes (string-to-octets msg)))
-    (encrypt-in-place cipher bytes)
+    (encrypt-in-place self bytes)
     bytes))
 
-(defun decrypt (cipher msg)
-  (decrypt-in-place cipher msg)
+(defun decrypt (self msg)
+  (decrypt-in-place self msg)
   (octets-to-string msg))
