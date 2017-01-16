@@ -87,7 +87,7 @@
       (setf (gethash (table-key clone prev) (tbl-recs self))
             rec))))
 
-(defun table-commit (&key (trans *table-trans*))
+(defun table-commit (&key (trans *table-trans*) )
   ;; Clears changes made in TRANS
   (when trans
     (dolist (ch (nreverse (rest trans)))
@@ -178,7 +178,8 @@
 (defun table-on-upsert (self)
   (tbl-on-upsert self))
 
-(defun table-upsert (self rec &key (trans *table-trans*))
+(defun table-upsert (self rec &key (stream (tbl-stream self))
+                                   (trans *table-trans*))
   (let ((key (table-key self rec))
         (prev (gethash rec (tbl-prev self))))
     (with-table-trans (:trans trans)
@@ -190,7 +191,7 @@
                        :rec rec
                        :prev prev)
               (rest  trans))
-        (when-let (stream (tbl-stream self))
+        (when stream
           (table-write self :upsert rec
                             :stream stream)))
     
@@ -198,7 +199,8 @@
     (setf (gethash rec (tbl-prev self)) (record-clone rec)))
   rec)
 
-(defun table-delete (self rec &key (trans *table-trans*))
+(defun table-delete (self rec &key (stream (tbl-stream self))
+                                   (trans *table-trans*))
   (let ((prev (gethash rec (tbl-prev self))))
     (when prev
       (let ((key (table-key self rec)))
@@ -208,7 +210,7 @@
                            :rec rec
                            :prev prev)
                   (rest trans))
-            (when-let (stream (tbl-stream self))
+            (when stream
               (table-write self :delete prev :stream stream)))
         
         (with-table-trans (:trans trans)

@@ -155,6 +155,7 @@
 
 (defun index-add (self rec &key (key (index-key self rec))
                                 start
+                                (stream (idx-stream self))
                                 (trans *index-trans*))
   ;; Adds REC to SELF after START and returns REC
   (multiple-value-bind (prev found?)
@@ -167,7 +168,7 @@
       (if trans
           (push (make-ch :op :add :idx self :key key :rec rec)
                 (rest trans))
-          (when-let (stream (idx-stream self))
+          (when stream
             (index-write self :add rec :stream stream)))
       (index-insert self prev rec))))
 
@@ -191,7 +192,10 @@
 (defun index-on-remove (self)
   (idx-on-remove self))
 
-(defun index-remove (self key &key rec start (trans *index-trans*))
+(defun index-remove (self key &key rec
+                                   start
+                                   (stream (idx-stream self))
+                                   (trans *index-trans*))
   ;; Removes KEY/REC from SELF after START and returns prev
   (multiple-value-bind (prev found?) 
       (index-prev self key :rec rec :start start)
@@ -204,7 +208,7 @@
                          :idx self
                          :key key :rec (second prev))
                 (rest trans))
-          (when-let (stream (idx-stream self))
+          (when stream
             (index-write self :remove found? :stream stream)))
       
       (index-delete self prev))))
