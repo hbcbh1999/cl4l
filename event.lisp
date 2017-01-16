@@ -5,17 +5,17 @@
 
 (in-package cl4l-event)
 
-(defstruct (evt)
+(defstruct (event (:conc-name ev-) (:constructor make-ev))
   subs)
 
 (defun make-event (&rest args)
-  (apply #'make-evt args))
+  (apply #'make-ev args))
 
 (defun event-subscribe (self fn)
-  (setf (evt-subs self) (adjoin fn (evt-subs self))))
+  (setf (ev-subs self) (adjoin fn (ev-subs self))))
 
 (defun event-unsubscribe (self fn)
-  (setf (evt-subs self) (remove fn (evt-subs self))))
+  (setf (ev-subs self) (remove fn (ev-subs self))))
 
 (defun event-publish (self &rest args)
-  (mapcar (lambda (fn) (apply fn args)) (evt-subs self)))
+  (mapcar (lambda (fn) (apply fn args)) (ev-subs self)))

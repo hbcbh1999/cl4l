@@ -11,6 +11,7 @@
                (:file "test")
                (:file "record")
                (:file "table")
+               (:file "database")
                (:file "memoize")
                (:file "event-tests")
                (:file "index-tests")

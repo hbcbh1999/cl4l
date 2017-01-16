@@ -70,9 +70,9 @@
 (defun index (key &rest recs)
   ;; Returns a new index with KEY, initialized from RECS
   (let ((srecs (and recs (stable-sort recs 
-                                    (lambda (x y) 
-                                      (= (compare x y) -1)) 
-                                    :key key))))
+                                      (lambda (x y) 
+                                        (= (compare x y) -1)) 
+                                      :key key))))
     (make-index :key key
                 :head (cons nil srecs) 
                 :length (length srecs))))
@@ -109,7 +109,7 @@
       (values start nil 0)
       (let* ((lrec (idx-tail self))
 	     (lrec-cmp (compare key 
-                               (index-key self (first lrec)))))
+                                (index-key self (first lrec)))))
 	(if  (> lrec-cmp 0)
 	     (values lrec (zerop lrec-cmp) (idx-length self))
 	     (do ((recs start (rest recs))
@@ -154,20 +154,21 @@
     rec))
 
 (defun index-add (self rec &key (key (index-key self rec))
-                               start
-                               (trans *index-trans*))
+                                start
+                                (trans *index-trans*))
   ;; Adds REC to SELF after START and returns REC
   (multiple-value-bind (prev found?)
       (index-prev self key :rec rec :start start)
     (unless (and found?
                  (or (idx-unique? self)
                      (eq rec (second prev))))
-      (event-publish (idx-on-add self) rec)
+      (with-index-trans (:trans trans)
+        (event-publish (idx-on-add self) rec))
       (if trans
-        (push (make-ch :op :add :idx self :key key :rec rec)
-              (rest trans))
-        (when-let (stream (idx-stream self))
-          (index-write self :add rec :stream stream)))
+          (push (make-ch :op :add :idx self :key key :rec rec)
+                (rest trans))
+          (when-let (stream (idx-stream self))
+            (index-write self :add rec :stream stream)))
       (index-insert self prev rec))))
 
 (defun index-delete (self prev)
@@ -195,15 +196,17 @@
   (multiple-value-bind (prev found?) 
       (index-prev self key :rec rec :start start)
     (when found?
-      (event-publish (idx-on-remove self) rec)
-
+      (with-index-trans (:trans trans)
+        (event-publish (idx-on-remove self) rec))
+      
       (if trans
-        (push (make-ch :op :remove
-                       :idx self
-                       :key key :rec (second prev))
-              (rest trans))
-        (when-let (stream (idx-stream self))
-          (index-write self :remove found? :stream stream)))
+          (push (make-ch :op :remove
+                         :idx self
+                         :key key :rec (second prev))
+                (rest trans))
+          (when-let (stream (idx-stream self))
+            (index-write self :remove found? :stream stream)))
+      
       (index-delete self prev))))
 
 (defun index-match (self other &key prev-match)

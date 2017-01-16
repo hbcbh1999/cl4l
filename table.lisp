@@ -90,13 +90,13 @@
 (defun table-commit (&key (trans *table-trans*))
   ;; Clears changes made in TRANS
   (when trans
-      (dolist (ch (nreverse (rest trans)))
-        (when-let (stream (tbl-stream (ch-tbl ch)))
-          (table-write (ch-tbl ch)
-                       (ch-op ch)
-                       (ch-prev ch)
-                       :stream stream)))
-      (table-trans-reset trans)))
+    (dolist (ch (nreverse (rest trans)))
+      (when-let (stream (tbl-stream (ch-tbl ch)))
+        (table-write (ch-tbl ch)
+                     (ch-op ch)
+                     (ch-prev ch)
+                     :stream stream)))
+    (table-trans-reset trans)))
 
 (defun table-diff (self other)
   ;; Removes all records from SELF that are found in OTHER and
@@ -179,44 +179,45 @@
   (tbl-on-upsert self))
 
 (defun table-upsert (self rec &key (trans *table-trans*))
-  (with-table-trans (:trans trans)
-    (let ((key (table-key self rec))
-          (prev (gethash rec (tbl-prev self))))
-      (event-publish (tbl-on-upsert self) rec prev)
+  (let ((key (table-key self rec))
+        (prev (gethash rec (tbl-prev self))))
+    (with-table-trans (:trans trans)
+      (event-publish (tbl-on-upsert self) rec prev))
 
-      (if trans
-          (push (make-ch :op :upsert
-                         :tbl self
-                         :rec rec
-                         :prev prev)
-                (rest  trans))
-          (when-let (stream (tbl-stream self))
-            (table-write self :upsert rec
-                              :stream stream)))
+    (if trans
+        (push (make-ch :op :upsert
+                       :tbl self
+                       :rec rec
+                       :prev prev)
+              (rest  trans))
+        (when-let (stream (tbl-stream self))
+          (table-write self :upsert rec
+                            :stream stream)))
     
-      (setf (gethash key (tbl-recs self)) rec)
-      (setf (gethash rec (tbl-prev self)) (record-clone rec))))
+    (setf (gethash key (tbl-recs self)) rec)
+    (setf (gethash rec (tbl-prev self)) (record-clone rec)))
   rec)
 
 (defun table-delete (self rec &key (trans *table-trans*))
-  (with-table-trans (:trans trans)
-    (let ((prev (gethash rec (tbl-prev self))))
-      (when prev
-        (let ((key (table-key self rec)))
-          (if trans
-              (push (make-ch :op :delete
-                             :tbl self
-                             :rec rec
-                             :prev prev)
-                    (rest trans))
-              (when-let (stream (tbl-stream self))
-                (table-write self :delete prev :stream stream)))
-                  
-          (event-publish (tbl-on-delete self) rec prev)
-          (remhash key (tbl-recs self))
-          (remhash rec (tbl-prev self))))
+  (let ((prev (gethash rec (tbl-prev self))))
+    (when prev
+      (let ((key (table-key self rec)))
+        (if trans
+            (push (make-ch :op :delete
+                           :tbl self
+                           :rec rec
+                           :prev prev)
+                  (rest trans))
+            (when-let (stream (tbl-stream self))
+              (table-write self :delete prev :stream stream)))
+        
+        (with-table-trans (:trans trans)
+          (event-publish (tbl-on-delete self) rec prev))
+        
+        (remhash key (tbl-recs self))
+        (remhash rec (tbl-prev self)))
       prev)))
-  
+
 (defun table-prev? (self rec)
   (gethash rec (tbl-prev self)))
 
@@ -231,7 +232,7 @@
              (table-delete (ch-tbl ch) (ch-rec ch) :trans nil)))
         (:delete
          (table-upsert (ch-tbl ch) (ch-rec ch) :trans nil))))
-      
+    
     (table-trans-reset trans)))
 
 (defun table-dump (self &key (stream (tbl-stream self)))
