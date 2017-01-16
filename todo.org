@@ -4,6 +4,9 @@
 ** add (setf database-password) to write path/password
 *** pbkdf2
 ** add (database-login password) to authenticate
+* add support for generating rsa keys to crypt
+* add support for rsa encrypt/decrypt
+* add support for rsa sign/verify
 * add tag based logging
 * add fifo + channel
 ** base on fifo + sbcl atomic/semaphore
