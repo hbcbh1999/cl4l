@@ -20,7 +20,7 @@
 (defvar *index-trans* nil)
 
 (defmacro do-index ((expr rec) &body body)
-  ;; Iterates body with REC from EXPR
+  ;; Iterates BODY with REC from EXPR
   `(do-iter (,expr ,rec)
      ,@body))
 

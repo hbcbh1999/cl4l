@@ -20,7 +20,7 @@
 (defvar *table-trans* nil)
 
 (defmacro do-table ((expr key rec prev) &body body)
-  ;; Iterates body with KEY, REC & PREV from EXPR
+  ;; Iterates BODY with KEY, REC & PREV from EXPR
   (with-symbols (_it)
     `(do-iter (,expr ,_it)
        (let* ((,key (first ,_it))
