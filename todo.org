@@ -2,9 +2,6 @@
 ** crypt.lisp
 ** ironclad
 ** ctr mode
-** add make-init-vector cipher
-** use (ironclad:random-data length) for init-vector
-*** use (ironclad:block-length cipher) for length
 * add table/index encryption
 ** activate when password is specified
 * add tag based logging

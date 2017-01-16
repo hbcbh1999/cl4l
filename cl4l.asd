@@ -2,7 +2,7 @@
   :description "esoteric CL essentials"
   :author "Andreas <codr4life@gmail.com>"
   :license "MIT"
-  :depends-on (:ironclad)
+  :depends-on (:flexi-streams :ironclad)
   :serial t
   :components ((:file "cl4l")
                (:file "utils")
@@ -15,6 +15,7 @@
                (:file "table")
                (:file "database")
                (:file "memoize")
+               (:file "crypt-tests")
                (:file "event-tests")
                (:file "index-tests")
                (:file "iter-tests")
