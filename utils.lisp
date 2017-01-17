@@ -19,10 +19,9 @@
   (:method ((x cons) y)
     (let ((xrest (rest x)))
       (if (consp xrest)
-          (do ((xi x (rest xi)) (yi y (rest yi)))
-              ((null yi) 1
-               (null xi) -1
-               (and (null xi) (null yi)) 0)
+          (do ((xi x (rest xi)) (yi y (rest yi))) (nil)
+            (when (null xi) (return (if (null yi) 0 -1)))
+            (when (null yi) (return 1))
             (let ((cmp (compare (first xi) (first yi))))
               (unless (zerop cmp)
                 (return cmp))))
@@ -38,9 +37,10 @@
       (t 0)))
 
   (:method ((x string) y)
-    (do ((i 0 (1+ i)))
-	((= i (min (length x) (length y)))
-	 (compare (length x) (length y)))
+    (do ((i 0 (1+ i))) (nil)
+      (when (= i (length x)) (return (if (= i (length y)) 0 -1)))
+      (when (= i (length y)) (return 1))
+      
       (let* ((xc (aref x i))
 	     (yc (aref y i))
 	     (cmp (compare xc yc)))
