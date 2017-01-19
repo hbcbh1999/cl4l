@@ -1,5 +1,4 @@
-* dig up fifo + channel
-** base on fifo + sbcl atomic/semaphore
+* add channel based on fifo / semaphore
 * threaded iters
 * ---
 * add table/index encryption
