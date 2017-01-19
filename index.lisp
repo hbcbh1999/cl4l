@@ -16,17 +16,16 @@
 
 (in-package cl4l-index)
 
-;; Default trans
 (defvar *index-trans* nil)
 
 (defmacro do-index ((expr rec) &body body)
-  ;; Iterates BODY with REC from EXPR
+  "Iterates BODY with REC from EXPR"
   `(do-iter (,expr ,rec)
      ,@body))
 
 (defmacro with-index-trans ((&key trans) &body body)
-  ;; Executes BODY in transaction that is automatically
-  ;; rolled back on early and committed on normal exit
+  "Executes BODY in transaction that is automatically
+   rolled back on early and committed on normal exit" 
   (with-symbols (_res)
     `(let ((*index-trans* (or ,trans (make-index-trans))))
        (unwind-protect
@@ -56,7 +55,7 @@
                         tail
                         (length 0)
                         (unique? t))
-  ;; Returns a new index from ARGS
+  "Returns a new index from ARGS"
   (make-idx :key-gen (or key-gen (key-gen key))
             :head head
             :stream stream
@@ -68,7 +67,7 @@
   (list nil))
 
 (defun index (key &rest recs)
-  ;; Returns a new index with KEY, initialized from RECS
+  "Returns a new index with KEY, initialized from RECS"
   (let ((srecs (and recs (stable-sort recs 
                                       (lambda (x y) 
                                         (= (compare x y) -1)) 
@@ -78,7 +77,7 @@
                 :length (length srecs))))
 
 (defun index-clone (self)
-  ;; Returns clone of SELF
+  "Returns clone of SELF"
   (let ((recs (copy-list (idx-head self))))
     (make-index :key-gen (idx-key-gen self) 
 		:head recs 
@@ -86,24 +85,24 @@
                 :unique? (idx-unique? self))))
 
 (defun index-key (self rec)
-  ;; Returns key for REC in SELF
+  "Returns key for REC in SELF" 
   (funcall (idx-key-gen self) rec))
 
 (defun (setf index-key) (key self)
-  ;; Sets KEY in SELF
+  "Sets KEY in SELF"
   (setf (idx-key-gen self) (key-gen key)))
 
 (defun index-last (self)
-  ;; Returns the last record from SELF
+  "Returns the last record from SELF" 
   (idx-tail self))
 
 (defun index-length (self)
-  ;; Returns the length of SELF
+  "Returns the length of SELF" 
   (idx-length self))
 
 (defun index-prev (self key &key rec start)
-  ;; Returns the previous record in SELF matching KEY/REC,
-  ;; from START excl.
+  "Returns the previous record in SELF matching KEY/REC,
+   from START excl."
   (unless start (setf start (idx-head self)))
   (if (null (rest start))
       (values start nil 0)
@@ -127,26 +126,26 @@
 		   (return (values recs (zerop cmp) pos)))))))))
 
 (defun index-first (self &key key rec)
-  ;; Returns all records in SELF, optionally from KEY/REC incl.
+  "Returns all records in SELF, optionally from KEY/REC incl."
   (rest (if key (index-prev self key :rec rec) (idx-head self))))
 
 (defun index-find (self key &key rec start)
-  ;; Returns record with KEY/REC in SELF, from START excl.;
-  ;; or NIL if not found.
+  "Returns record with KEY/REC in SELF, from START excl.;
+   or NIL if not found."
   (multiple-value-bind (prev found?) 
       (index-prev self key :rec rec :start start)
     (when found? (first (rest prev)))))
 
 (defun index-pos (self key rec &key start)
-  ;; Returns the position of KEY/REC in SELF, from START excl.;
-  ;; or NIL if not found.
+  "Returns the position of KEY/REC in SELF, from START excl.;
+   or NIL if not found." 
   (multiple-value-bind (prev found? pos) 
       (index-prev self key :rec rec :start start)
     (declare (ignore prev))
     (when found? pos)))
 
 (defun index-insert (self prev rec)
-  ;; Inserts REC after PREV in SELF and returns REC
+  "Inserts REC after PREV in SELF and returns REC"
   (let* ((recs (push rec (rest prev))))
     (when (eq prev (idx-tail self))
       (setf (idx-tail self) recs))
@@ -157,7 +156,7 @@
                                 start
                                 (stream (idx-stream self))
                                 (trans *index-trans*))
-  ;; Adds REC to SELF after START and returns REC
+  "Adds REC to SELF after START and returns REC"
   (multiple-value-bind (prev found?)
       (index-prev self key :rec rec :start start)
     (unless found?
@@ -171,7 +170,7 @@
       (index-insert self prev rec))))
 
 (defun index-delete (self prev)
-  ;; Deletes record after PREV from SELF returns it
+  "Deletes record after PREV from SELF returns it" 
   (when (eq (rest prev) (idx-tail self))
     (setf (idx-tail self) prev))
   (let ((rec (second prev)))
@@ -183,7 +182,7 @@
   (idx-on-add self))
 
 (defun index-iter (self &key (start (idx-head self)))
-  ;; Executes new iterator for SELF from START
+  "Starts new iterator for SELF from START" 
   (dolist (rec start)
     (iter-yield rec)))
 
@@ -194,7 +193,7 @@
                                    start
                                    (stream (idx-stream self))
                                    (trans *index-trans*))
-  ;; Removes KEY/REC from SELF after START and returns prev
+  "Removes KEY/REC from SELF after START and returns prev" 
   (multiple-value-bind (prev found?) 
       (index-prev self key :rec rec :start start)
     (when found?
@@ -212,8 +211,8 @@
       (index-delete self prev))))
 
 (defun index-match (self other &key prev-match)
-  ;; Returns next matching records from (SELF . OTHER),
-  ;; optionally starting from PREV-MATCH.
+  "Returns next matching records from (SELF . OTHER),
+   optionally starting from PREV-MATCH."
   (unless prev-match
     (setf prev-match (cons (idx-head self) (idx-head other))))
   (let* ((start (first prev-match)) (prev-irec start))
@@ -238,8 +237,8 @@
            (return (cons prev-irec jrec))))))))
 
 (defun index-join (self other)
-  ;; Removes all records from SELF that are not found in OTHER and
-  ;; returns SELF.
+  "Removes all records from SELF that are not found in OTHER and
+   returns SELF."
   (do ((m nil)
        (first? t nil)
        (prev (idx-head self) (rest (first m)))) (nil)
@@ -252,8 +251,8 @@
     (unless m (return self))))
 
 (defun index-diff (self other)
-  ;; Removes all records from SELF that are found in OTHER and
-  ;; returns SELF.
+  "Removes all records from SELF that are found in OTHER and
+   returns SELF."
   (do ((m nil)) (nil)
     (setf m (index-match self other :prev-match m))
     (when m (index-delete self (first m)))
@@ -264,8 +263,8 @@
     (index-write self :add rec :stream stream)))
 
 (defun index-merge (self other)
-  ;; Adds all records from OTHER that are not found in SELF and
-  ;; returns SELF.
+  "Adds all records from OTHER that are not found in SELF and
+   returns SELF."
   (do ((m nil)
        (first? t nil)
        (start (idx-head self) (rest (first m)))
@@ -285,7 +284,7 @@
   (rplacd self nil))
 
 (defun index-commit (&key (trans *index-trans*))
-  ;; Clears changes made in TRANS
+  "Clears changes made in TRANS" 
   (when trans
     (dolist (ch (nreverse (rest trans)))
       (when-let (stream (idx-stream (ch-idx ch)))
@@ -313,7 +312,7 @@
        (go next))))
 
 (defun index-rollback (&key (trans *index-trans*))
-  ;; Rolls back and clears changes made in TRANS
+  "Rolls back and clears changes made in TRANS"
   (when trans
     (dolist (ch (nreverse (rest trans)))
       (ecase (ch-op ch)

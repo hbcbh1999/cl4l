@@ -16,11 +16,10 @@
 
 (in-package cl4l-table)
 
-;; Default trans
 (defvar *table-trans* nil)
 
 (defmacro do-table ((expr key rec prev) &body body)
-  ;; Iterates BODY with KEY, REC & PREV from EXPR
+  "Iterates BODY with KEY, REC & PREV from EXPR"
   (with-symbols (_it)
     `(do-iter (,expr ,_it)
        (let* ((,key (first ,_it))
@@ -30,8 +29,8 @@
          ,@body))))
 
 (defmacro with-table-trans ((&key trans) &body body)
-  ;; Executes BODY in transaction that is automatically
-  ;; rolled back on early and committed on normal exit
+  "Executes BODY in transaction that is automatically
+   rolled back on early and committed on normal exit"
   (with-symbols (_res)
     `(let ((*table-trans* (or ,trans (make-table-trans))))
        (unwind-protect
@@ -58,7 +57,7 @@
             :stream stream))
 
 (defun table (key &rest recs)
-  ;; Returns a new table with KEY, populated from RECS
+  "Returns a new table with KEY, populated from RECS"
   (let ((tbl (make-table :key key)))
     (dolist (rec recs tbl)
       (table-upsert tbl rec))))
@@ -78,7 +77,7 @@
   (clrhash (tbl-recs self)))
 
 (defun table-clone (self)
-  ;; Returns clone of SELF
+  "Returns clone of SELF" 
   (let ((clone (make-table :key-gen (tbl-key-gen self)
                            :test (hash-table-test
                                   (tbl-recs self)))))
@@ -88,7 +87,7 @@
             rec))))
 
 (defun table-commit (&key (trans *table-trans*) )
-  ;; Clears changes made in TRANS
+  "Clears changes made in TRANS" 
   (when trans
     (dolist (ch (nreverse (rest trans)))
       (when-let (stream (tbl-stream (ch-tbl ch)))
@@ -99,15 +98,14 @@
     (table-trans-reset trans)))
 
 (defun table-diff (self other)
-  ;; Removes all records from SELF that are found in OTHER and
-  ;; returns SELF.
+  "Removes all records from SELF that are found in OTHER and
+   returns SELF."
   (do-hash-table ((tbl-prev other) rec prev :result self)
     (remhash rec (tbl-prev self))
     (remhash (table-key self prev) (tbl-recs self))))
 
 (defun table-find (self key)
-  ;; Returns record with KEY from SELF,
-  ;; or NIL if not found.
+  "Returns record with KEY from SELF, or NIL if not found." 
   (gethash key (tbl-recs self)))
 
 (defgeneric table-subscribe (self sub)
@@ -146,22 +144,22 @@
   sub)
 
 (defun table-iter (self)
-  ;; Executes new iterator for SELF
+  "Starts new iterator for SELF"
   (do-hash-table ((tbl-recs self) key rec)
     (let ((prev (gethash rec (tbl-prev self))))
       (iter-yield (cons key (cons rec prev))))))
 
 (defun table-join (self other)
-  ;; Removes all records from SELF that are not found in OTHER and
-  ;; returns SELF.
+  "Removes all records from SELF that are not found in OTHER and
+   returns SELF."
   (do-hash-table ((tbl-prev self) rec prev :result self)
     (unless (gethash rec (tbl-prev other))
       (remhash rec (tbl-prev self))
       (remhash (table-key self prev) (tbl-recs self)))))
 
 (defun table-merge (self other)
-  ;; Adds all records from OTHER that are not found in SELF and
-  ;; returns SELF.
+  "Adds all records from OTHER that are not found in SELF and
+   returns SELF."
   (do-hash-table ((tbl-prev other) rec prev :result self)
     (setf (gethash rec (tbl-prev self)) prev)
     (setf (gethash (table-key self prev) (tbl-recs self)) rec)))
@@ -224,7 +222,7 @@
   (gethash rec (tbl-prev self)))
 
 (defun table-rollback (&key (trans *table-trans*))
-  ;; Rolls back and clears changes made in TRANS
+  "Rolls back and clears changes made in TRANS" 
   (when trans
     (dolist (ch (nreverse (rest trans)))
       (ecase (ch-op ch)

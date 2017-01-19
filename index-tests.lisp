@@ -137,7 +137,7 @@
          (tbl-y (apply #'table nil y)))
     (call-next-method)))
 
-(define-test (:index)
+(define-test (:index :perf)
   (let ((join (index-clone idx-x)) 
         (diffxy (index-clone idx-x))
         (diffyx (index-clone idx-y))
@@ -147,7 +147,7 @@
     (index-diff diffyx idx-x)
     (index-merge merge idx-y)))
 
-(define-test (:index :table)
+(define-test (:index :perf :table)
   (let ((join (table-clone tbl-x)) 
         (diffxy (table-clone tbl-x))
         (diffyx (table-clone tbl-y))
@@ -157,7 +157,7 @@
     (table-diff diffyx tbl-x)
     (table-merge merge tbl-y)))
 
-(define-test (:index :built-in)
+(define-test (:index :perf :built-in)
   (let ((join (copy-list x))
         (diffxy (copy-list x))
         (diffyx (copy-list y))

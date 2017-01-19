@@ -6,21 +6,21 @@
 (in-package cl4l-iter)
 
 (defmacro do-iter ((expr it) &body body)
-  ;; Iterates body with IT bound to items from EXPR
+  "Iterates body with IT bound to items from EXPR"
   `(with-iter (,expr)
      (let ((,it (iter-result)))
        ,@body)
      (iter-next)))
 
 (defmacro iter-yield (&optional result)
-  ;; Signals ITER-YIELD with RESULT
+  "Signals ITER-YIELD with RESULT" 
   `(restart-case 
        (signal 'iter-yield :result ,result)
      (iter-next ())))
 
 (defmacro with-iter ((expr &key name) &body body)
-  ;; Executes BODY with EXPR bound to optional NAME,
-  ;; aliases are provided for anonymous use.
+  "Executes BODY with EXPR bound to optional NAME,
+   aliases are provided for anonymous use."
   (let* ((_c (gensym))
          (_name (or name (gensym)))
          (_result (symbol! _name '-result)))

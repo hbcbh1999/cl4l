@@ -19,5 +19,6 @@
                (:file "event-tests")
                (:file "index-tests")
                (:file "iter-tests")
+               (:file "memoize-tests")
                (:file "table-tests")
                (:file "utils-tests")))

@@ -1,3 +1,7 @@
+* dig up fifo + channel
+** base on fifo + sbcl atomic/semaphore
+* threaded iters
+* ---
 * add table/index encryption
 ** add database-password
 *** use as crypt key
@@ -8,8 +12,6 @@
 * add support for rsa encrypt/decrypt
 * add support for rsa sign/verify
 * add tag based logging
-* add fifo + channel
-** base on fifo + sbcl atomic/semaphore
 * add db.lisp
 ** multi threaded
 ** msg based
