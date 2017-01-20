@@ -23,7 +23,7 @@ Welcome to cl4l. The project supports asdf and may be loaded by calling ```(ql:q
 ```semaphore.lisp``` implements minimal semaphores on top of bordeaux-threads.
 
 ### channels
-```channel.lisp``` implements optionally buffered channels on top of fifo queues and semaphores.
+```chan.lisp``` implements optionally buffered channels on top of fifo queues and semaphores.
 
 ### tests
 ```test.lisp``` implements a test framework using tags to group and trigger tests dynamically.

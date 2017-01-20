@@ -1,5 +1,5 @@
 * threaded iters?
-* fifo iter?
+* add fifo iter
 * add table/index encryption
 ** add database-password
 *** use as crypt key
