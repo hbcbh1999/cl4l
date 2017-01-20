@@ -16,7 +16,6 @@
     (assert (= i (chan-get ch)))))
 
 (define-test (:chan)
-  ;; Unbuffered chan to force rendezvous
-  (let ((ch (make-chan)))
+  (let ((ch (make-chan :max-length test-max)))
     (make-thread (lambda () (consumer ch)))
     (join-thread (make-thread (lambda () (producer ch))))))

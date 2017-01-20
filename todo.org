@@ -1,4 +1,5 @@
-* threaded iters?
+* threaded iters
+** perf cmp between iters & chan/thread
 * add fifo iter
 * add table/index encryption
 ** add database-password
