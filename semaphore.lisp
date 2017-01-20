@@ -10,13 +10,10 @@
 (in-package cl4l-semaphore)
 
 (defstruct (semaphore (:conc-name sem-)
-                      (:constructor make-sem))
+                      (:constructor make-semaphore))
   (lock (make-lock))
   (wait (make-condition-variable))
   (count 0))
-
-(defun make-semaphore (&key (count 0))
-  (make-sem :count count))
 
 (defun semaphore-signal (self)
   "Increments SELF and wakes up waiting thread if any"

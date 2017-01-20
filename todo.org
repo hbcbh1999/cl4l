@@ -1,4 +1,3 @@
-* add channel based on fifo / semaphore
 * threaded iters
 * ---
 * add table/index encryption
